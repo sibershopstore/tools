@@ -9,43 +9,77 @@
   <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
+    /* === Gaya Global === */
+    body {
+      background-color: #f8f9fa;
       display: flex;
       flex-direction: column;
-      background-color: #f8f9fa;
+      min-height: 100vh;
+      font-family: 'Poppins', sans-serif;
     }
-
-    main {
-      flex: 1 0 auto;
-      padding: 40px 20px;
-    }
-
-    .content-box {
-      background-color: white;
-      border-radius: 10px;
-      padding: 30px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-      max-width: 900px;
-      margin: auto;
-    }
-
     header {
-      background-color: #343a40;
+      background-color: #212529;
+      padding: 1px 0;
     }
-
-    .navbar-brand, .nav-link {
-      color: #fff !important;
+    .navbar-brand {
+      font-size: 1.4rem;
+      font-weight: bold;
+      padding-left: 15px;
     }
-
+    .nav-link {
+      color: #ffffff !important;
+      font-size: 1rem;
+      padding: 8px 15px;
+    }
+    .nav-link:hover {
+      color: #adb5bd !important;
+    }
+    .navbar-toggler {
+      border: none;
+      color: #fff;
+    }
+    main {
+      flex: 1;
+    }
     footer {
-      flex-shrink: 0;
-      background-color: #343a40;
-      color: white;
+      background-color: #212529;
+      color: #adb5bd;
       text-align: center;
-      padding: 15px 0;
+      padding: 20px 0;
       font-size: 0.9rem;
+    }
+    /* === Responsive Fix === */
+    @media (max-width: 576px) {
+      .navbar-brand {
+        font-size: 1.4rem;
+        padding-left: 10px;
+      }
+      .nav-link {
+        font-size: 0.95rem;
+        padding: 8px 10px;
+      }
+      footer {
+        font-size: 0.85rem;
+      }
+    }
+    /* === Tools Section === */
+    .search-section {
+      padding: 40px 20px;
+      background-color: #ffffff;
+    }
+    .tools-list {
+      padding: 20px;
+    }
+    .tool-card {
+      border: 1px solid #dee2e6;
+      border-radius: 10px;
+      padding: 20px;
+      background: #fff;
+      transition: 0.3s;
+    }
+    .tool-card:hover {
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      transform: translateY(-5px);
     }
   </style>
 </head>
