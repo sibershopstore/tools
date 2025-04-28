@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>WHOIS Checker - Siber Shop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      background-color: #f8f9fa;
+    }
+    .navbar {
+      background-color: #212529;
+    }
+    .navbar-brand, .nav-link {
+      color: white !important;
+    }
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+    .nav-link.active {
+      font-weight: bold;
+    }
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .tool-box {
+      background-color: white;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 700px;
+    }
+    footer {
+      background-color: #212529;
+      color: #fff;
+      text-align: center;
+      padding: 15px 20px;
+      font-size: 0.9rem;
+    }
+    dl {
+      background-color: #f8f9fa;
+      padding: 20px;
+      border-radius: 5px;
+    }
+    dt {
+      font-weight: bold;
+    }
+    dd {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Header -->
+<nav class="navbar navbar-expand-lg navbar-dark">
+  <div class="container">
+    <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved me-2"></i>Siber Shop</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
+        <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
+        <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
+        <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Content -->
+<main>
+  <div class="tool-box">
+    <h4 class="text-center mb-4">WHOIS Checker</h4>
+    <form id="whoisForm">
+      <div class="mb-3">
+        <label for="domainInput" class="form-label">Masukkan Nama Domain</label>
+        <input type="text" id="domainInput" class="form-control" placeholder="contoh: example.com" required>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Cek WHOIS</button>
+    </form>
+    <div class="mt-4">
+      <h5>Hasil:</h5>
+      <div id="result">
+        Belum ada hasil.
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- Footer -->
+<footer>
+  &copy; 2025 Siber Shop Store - All Rights Reserved
+</footer>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+(function(){document.getElementById('whoisForm').addEventListener('submit',async function(a){a.preventDefault();const b=document.getElementById('domainInput').value.trim(),c=document.getElementById('result');c.innerHTML='<p>Sedang memproses...</p>';const d='at_NVM5iEYAcDlkCrFbjtvQx';const e='a0kLbCLm';const f='&outputFormat=JSON';const g='https://www.whoisxmlapi.com/whoisserver/WhoisService?apiKey='+d+e+'&domainName='+encodeURIComponent(b)+f;try{const h=await fetch(g);if(!h.ok)throw new Error('Gagal mengambil data');const i=await h.json(),j=i.WhoisRecord||{};c.innerHTML='<dl><dt>Domain Name</dt><dd>'+ (j.domainName||'-')+'</dd><dt>Registrar</dt><dd>'+(j.registrarName||'-')+'</dd><dt>Registrant Organization</dt><dd>'+(j.registrant?.organization||'-')+'</dd><dt>Registrant Name</dt><dd>'+(j.registrant?.name||'-')+'</dd><dt>Registrant Email</dt><dd>'+(j.registrant?.email||'-')+'</dd><dt>Registrant Country</dt><dd>'+(j.registrant?.country||'-')+'</dd><dt>Admin Organization</dt><dd>'+(j.administrativeContact?.organization||'-')+'</dd><dt>Admin Name</dt><dd>'+(j.administrativeContact?.name||'-')+'</dd><dt>Admin Email</dt><dd>'+(j.administrativeContact?.email||'-')+'</dd><dt>Admin Country</dt><dd>'+(j.administrativeContact?.country||'-')+'</dd><dt>Technical Contact</dt><dd>'+(j.technicalContact?.email||'-')+'</dd><dt>Created Date</dt><dd>'+(j.createdDate||'-')+'</dd><dt>Updated Date</dt><dd>'+(j.updatedDate||'-')+'</dd><dt>Expires Date</dt><dd>'+(j.expiresDate||'-')+'</dd><dt>Name Servers</dt><dd>'+(j.nameServers?.hostNames?.join(', ')||'-')+'</dd><dt>Status</dt><dd>'+(j.status||'-')+'</dd></dl>'}catch(k){c.innerHTML='<p class="text-danger">Terjadi kesalahan saat memuat data WHOIS.</p>'}});})();
+</script>
+
+</body>
+</html>
