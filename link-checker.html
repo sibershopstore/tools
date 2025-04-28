@@ -133,18 +133,21 @@ document.getElementById('linkCheckerForm').addEventListener('submit', async func
   loading.style.display = 'block';
 
   try {
-    // Pakai AllOrigins RAW supaya langsung akses tanpa CORS error
-    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(urlInput)}`;
+    const apiUrl = `https://unshorten.me/json/${encodeURIComponent(urlInput)}`;
 
-    const response = await fetch(proxyUrl, { redirect: "follow" });
-
-    let finalURL = response.url; // Ambil URL hasil akhir redirect
-    if (!finalURL || finalURL === proxyUrl) {
-      finalURL = urlInput;
+    const response = await fetch(apiUrl);
+    if (!response.ok) {
+      throw new Error('Gagal mengambil link');
     }
 
-    resultLink.value = finalURL;
-    visitLink.href = finalURL;
+    const data = await response.json();
+    if (data.resolved_url) {
+      resultLink.value = data.resolved_url;
+      visitLink.href = data.resolved_url;
+    } else {
+      resultLink.value = "Tidak dapat menemukan link tujuan.";
+      visitLink.href = "#";
+    }
 
     resultSection.style.display = 'block';
   } catch (error) {
