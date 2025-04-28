@@ -52,6 +52,16 @@
       padding: 15px 20px;
       font-size: 0.9rem;
     }
+    #resultLink {
+      width: 100%;
+      overflow-x: auto;
+      word-break: break-all;
+    }
+    .note-text {
+      font-size: 0.9rem;
+      color: #6c757d;
+      margin-top: 8px;
+    }
   </style>
 </head>
 <body>
@@ -81,15 +91,24 @@
     <form id="linkCheckerForm">
       <div class="mb-3">
         <label for="urlInput" class="form-label">Masukkan URL</label>
-        <input type="url" id="urlInput" class="form-control" placeholder="contoh: https://example.com" required>
+        <input type="url" id="urlInput" class="form-control" placeholder="contoh: https://bit.ly/xxxx" required>
+        <div class="note-text">Temukan tujuan asli dari link yang diperpendek atau dialihkan.</div>
       </div>
       <button type="submit" class="btn btn-primary w-100">Cek Link</button>
     </form>
-    <div class="mt-4">
-      <h5>Hasil:</h5>
-      <div id="result">
-        Belum ada hasil.
+    <div class="mt-4" id="resultSection" style="display: none;">
+      <h5>Link Asli:</h5>
+      <div class="mb-3">
+        <input type="text" id="resultLink" class="form-control" readonly>
       </div>
+      <div class="d-flex gap-2">
+        <a id="visitLink" href="#" target="_blank" class="btn btn-success flex-grow-1">Kunjungi Link</a>
+        <button class="btn btn-outline-primary" id="copyBtn"><i class="fa fa-copy me-1"></i>Copy Link</button>
+      </div>
+    </div>
+    <div id="loading" class="text-center mt-3" style="display: none;">
+      <div class="spinner-border text-primary" role="status"></div>
+      <div>Memproses link...</div>
     </div>
   </div>
 </main>
@@ -104,21 +123,42 @@
 <script>
 document.getElementById('linkCheckerForm').addEventListener('submit', async function(e) {
   e.preventDefault();
-  const url = document.getElementById('urlInput').value.trim();
-  const resultDiv = document.getElementById('result');
+  const urlInput = document.getElementById('urlInput').value.trim();
+  const resultSection = document.getElementById('resultSection');
+  const resultLink = document.getElementById('resultLink');
+  const visitLink = document.getElementById('visitLink');
+  const loading = document.getElementById('loading');
 
-  resultDiv.innerHTML = '<p>Sedang memproses...</p>';
+  resultSection.style.display = 'none';
+  loading.style.display = 'block';
 
   try {
-    const response = await fetch(url, { method: 'HEAD', mode: 'no-cors' });
-    if (response.ok || response.type === 'opaque') {
-      resultDiv.innerHTML = '<p class="text-success">Link <strong>tersedia</strong> (tidak error).</p>';
-    } else {
-      resultDiv.innerHTML = '<p class="text-danger">Link <strong>tidak tersedia</strong> atau bermasalah (Error: ' + response.status + ')</p>';
-    }
+    const response = await fetch(urlInput, {
+      method: 'HEAD',
+      redirect: 'follow',
+    });
+
+    const finalURL = response.url || urlInput;
+
+    resultLink.value = finalURL;
+    visitLink.href = finalURL;
+
+    resultSection.style.display = 'block';
   } catch (error) {
-    resultDiv.innerHTML = '<p class="text-danger">Tidak dapat mengakses link. Mungkin URL salah atau server tidak merespons.</p>';
+    resultLink.value = "Gagal mengambil link. Pastikan URL benar.";
+    visitLink.href = "#";
+    resultSection.style.display = 'block';
+  } finally {
+    loading.style.display = 'none';
   }
+});
+
+document.getElementById('copyBtn').addEventListener('click', function() {
+  const linkField = document.getElementById('resultLink');
+  linkField.select();
+  linkField.setSelectionRange(0, 99999); // Untuk mobile
+  document.execCommand('copy');
+  alert('Link berhasil disalin!');
 });
 </script>
 
