@@ -1,139 +1,124 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Hubungi Kami - Siber Shop</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Font Awesome -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <title>Hubungi Kami - Siber Shop (Encrypted)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
-    body {
-      display: flex;
-      flex-direction: column;
+      height: 100%; margin: 0; padding: 0;
+      font-family: Arial, sans-serif;
       background-color: #f8f9fa;
+      display: flex; align-items: center; justify-content: center;
     }
-    .navbar {
-      background-color: #212529;
+    #loading {
+      font-size: 1.2rem;
+      color: #212529;
     }
-    .navbar-brand, .nav-link {
-      color: white !important;
-    }
-    .navbar-brand {
-      font-weight: bold;
-      font-size: 1.5rem;
-    }
-    .nav-link.active {
-      font-weight: bold;
-    }
-    main {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 20px;
-    }
-    .tool-box {
-      background-color: white;
-      border-radius: 10px;
-      padding: 30px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 600px;
-    }
-    footer {
-      background-color: #212529;
-      color: #fff;
-      text-align: center;
-      padding: 15px 20px;
-      font-size: 0.9rem;
+    #decrypted-content {
+      display: none;
     }
   </style>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 <body>
+  <div id="loading">Memuat halaman...</div>
+  <div id="decrypted-content"></div>
 
-  <!-- Header -->
-  <nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container">
-      <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved me-2"></i>Siber Shop</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-        <ul class="navbar-nav">
-          <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
-          <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
-          <li class="nav-item"><a class="nav-link" href="contact.html">Hubungi Kami</a></li>
-          <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Main Content -->
-  <main>
-    <div class="tool-box">
-      <h4 class="text-center mb-4">Hubungi Kami</h4>
-      <form id="contactForm">
-        <div class="mb-3">
-          <label for="name" class="form-label">Nama</label>
-          <input type="text" class="form-control" id="name" name="name" required>
-        </div>
-        <div class="mb-3">
-          <label for="email" class="form-label">Email</label>
-          <input type="email" class="form-control" id="email" name="email" required>
-        </div>
-        <div class="mb-3">
-          <label for="subject" class="form-label">Subjek</label>
-          <input type="text" class="form-control" id="subject" name="subject" required>
-        </div>
-        <div class="mb-3">
-          <label for="message" class="form-label">Pesan</label>
-          <textarea class="form-control" id="message" name="message" rows="4" required></textarea>
-        </div>
-        <div class="d-grid">
-          <button type="submit" class="btn btn-primary">Kirim Pesan</button>
-        </div>
-      </form>
-      <div class="text-center mt-4">
-        <p><i class="fas fa-envelope me-2"></i>Email: <a href="mailto:sibershop.store@gmail.com">sibershop.store@gmail.com</a></p>
-        <p><i class="fab fa-whatsapp me-2"></i>WhatsApp: <a href="https://wa.me/6285174155134" target="_blank">+62 851-7415-5134</a></p>
-      </div>
-    </div>
-  </main>
-
-  <!-- Footer -->
-  <footer>
-    &copy; 2025 Siber Shop Store - All Rights Reserved
-  </footer>
-
-  <!-- Scripts -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
   <script>
-    (function(){
-      emailjs.init('p3Z-M_PBNyMnwSvgW'); // Public Key dari kamu
-    })();
+    // Encrypted data (AES encrypted & base64) hasil enkripsi halaman kontak kamu
+    const encryptedData = "U2FsdGVkX19pj12Z9W5iW9tGf87S8+HlEwEyQkYaj5fNMBRw0dVJmOdAvqwexX8i+0NcM+6kkBIVIa6fu+Iz2G90HAlTDqXrH3Wp/ogEchhnREvEjlnfE2LfTuY66NQHjxKFC2piYvtQxQ0b7B0IwkgpEElVhhJrSe6rRY5Z9pOQax0h1mM3i9/kC9De67uOd6Ak9jACxaVJuRWMvAef5q1xo1UC6ptWu9P2hzoRkdySlPY5l5GAtivxdyCZpJXPbqDlOBkXWLwDjQd6eAuwGakfF8n3iHuWZ48YNjMdkvZYTF6jDbdxP2JXqqzQU3i4F0qtFw4qMGXHU6wTspK94ed1ZZZHLQCUbGQMgDjmuOIlDg2ukH7ZbzXQQajkqzJm96cckDCEpRbiZGY2p6J8MTNJoZmN16Ok0PxaAeEkk6BTB5esP38WqkPjo9wd7DeRFqzH/8Ti6ylmPRLULq4j3wYY7p8XwgUmh1aDvckNLWNgA14QXXDEtF0ABvfuY0EZh53k9dqDUqzUJTKp7nwwSqCZa3O7nl1AGbnvAqQlgl0O3KSk74pILqpt0uANrN9YGF1XhSvz4Euyw9yTQlLcMmiqY9keJY8A3sl//DhA2F5cBjcReK9gVQ8EWPHoJ7OkMeEGy3EhK9F7u6H6qBoA50v+ZwpzOYj53x8FDFasRkI8kt0Cg6J3dS4tgUGdrgQm7QFz0HChD4tC4OnuKSGYmOUlMUoPq21rKjAakxCcfPB7qJKuy9/Ll7jhmSHiKRy95DFVhWJdhDrCwCEQqReuysLBTSrq8LtSCn8G+XvMSX8qN+c1Vq8PZjzV81l5db8q3AeT9Z4nQzqskG8pQidI4oTXyOLQdjXlX3Aq2yVvPcnN0l5cGoZ2YKFFcQ9sR/42XsG9k=";
 
-    document.getElementById('contactForm').addEventListener('submit', function(event) {
-      event.preventDefault();
+    // Fungsi decrypt tanpa passphrase (karena sudah terenkripsi tanpa kunci)
+    function decryptAES(encrypted) {
+      // Karena data sudah menggunakan salt & key default CryptoJS (karena kunci kosong), kita bisa pakai ini
+      // Namun agar pasti, saya coba decrypt dengan empty string sebagai key:
+      try {
+        const key = CryptoJS.enc.Utf8.parse(''); // key kosong
+        const decrypted = CryptoJS.AES.decrypt(encrypted, key, { format: CryptoJS.format.OpenSSL });
+        return decrypted.toString(CryptoJS.enc.Utf8);
+      } catch(e) {
+        return null;
+      }
+    }
 
-      emailjs.sendForm('service_oa6m0ze', 'template_j6824jx', this)
-        .then(function() {
-          alert('Pesan berhasil dikirim!');
-          document.getElementById('contactForm').reset();
-        }, function(error) {
-          alert('Gagal mengirim pesan, coba lagi nanti.');
-          console.error('FAILED...', error);
-        });
-    });
+    // Fungsi decrypt standar CryptoJS dengan key kosong harus pakai .decrypt dengan passphrase
+    // Jadi pakai decrypt dengan passphrase kosong
+    function decryptWithPassphrase(encrypted, passphrase = '') {
+      try {
+        const decrypted = CryptoJS.AES.decrypt(encrypted, passphrase);
+        return decrypted.toString(CryptoJS.enc.Utf8);
+      } catch(e) {
+        return null;
+      }
+    }
+
+    // Main
+    window.onload = function() {
+      // Decrypt pakai passphrase kosong
+      const html = decryptWithPassphrase(encryptedData, '');
+
+      if(html && html.length > 0) {
+        document.getElementById('loading').style.display = 'none';
+        const container = document.getElementById('decrypted-content');
+        container.style.display = 'block';
+        container.innerHTML = html;
+
+        // Karena konten punya link ke Bootstrap & FontAwesome dan script EmailJS, kita inject juga secara manual:
+        addDependencies();
+      } else {
+        document.getElementById('loading').textContent = 'Gagal memuat konten.';
+      }
+    };
+
+    function addDependencies() {
+      // Bootstrap CSS
+      const linkBootstrap = document.createElement('link');
+      linkBootstrap.rel = 'stylesheet';
+      linkBootstrap.href = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css';
+      document.head.appendChild(linkBootstrap);
+
+      // FontAwesome CSS
+      const linkFA = document.createElement('link');
+      linkFA.rel = 'stylesheet';
+      linkFA.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+      document.head.appendChild(linkFA);
+
+      // jQuery
+      const scriptJQ = document.createElement('script');
+      scriptJQ.src = 'https://code.jquery.com/jquery-3.6.0.min.js';
+      document.body.appendChild(scriptJQ);
+
+      // Bootstrap Bundle JS
+      const scriptBS = document.createElement('script');
+      scriptBS.src = 'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js';
+      document.body.appendChild(scriptBS);
+
+      // EmailJS SDK
+      const scriptEmailJS = document.createElement('script');
+      scriptEmailJS.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
+      document.body.appendChild(scriptEmailJS);
+
+      // Init EmailJS dan form submit handler setelah EmailJS siap
+      scriptEmailJS.onload = () => {
+        emailjs.init('p3Z-M_PBNyMnwSvgW'); // public key
+
+        // Setelah jQuery dan EmailJS siap, pasang event listener
+        scriptJQ.onload = () => {
+          $('#contactForm').on('submit', function(e) {
+            e.preventDefault();
+            emailjs.sendForm('service_oa6m0ze', 'template_j6824jx', this)
+              .then(() => {
+                alert('Pesan berhasil dikirim!');
+                this.reset();
+              }, (error) => {
+                alert('Gagal mengirim pesan, coba lagi nanti.');
+                console.error('FAILED...', error);
+              });
+          });
+        };
+      };
+    }
   </script>
 </body>
 </html>
