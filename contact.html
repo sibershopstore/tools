@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8" />
-  <title>Hubungi Kami - Siber Shop (Encrypted)</title>
+  <title>Hubungi Kami - Siber Shop (AES decrypt passphrase kosong)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     html, body {
@@ -17,6 +17,8 @@
     }
     #decrypted-content {
       display: none;
+      width: 100%;
+      max-width: 600px;
     }
   </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
@@ -26,36 +28,20 @@
   <div id="decrypted-content"></div>
 
   <script>
-    // Encrypted data (AES encrypted & base64) hasil enkripsi halaman kontak kamu
-    const encryptedData = "U2FsdGVkX19pj12Z9W5iW9tGf87S8+HlEwEyQkYaj5fNMBRw0dVJmOdAvqwexX8i+0NcM+6kkBIVIa6fu+Iz2G90HAlTDqXrH3Wp/ogEchhnREvEjlnfE2LfTuY66NQHjxKFC2piYvtQxQ0b7B0IwkgpEElVhhJrSe6rRY5Z9pOQax0h1mM3i9/kC9De67uOd6Ak9jACxaVJuRWMvAef5q1xo1UC6ptWu9P2hzoRkdySlPY5l5GAtivxdyCZpJXPbqDlOBkXWLwDjQd6eAuwGakfF8n3iHuWZ48YNjMdkvZYTF6jDbdxP2JXqqzQU3i4F0qtFw4qMGXHU6wTspK94ed1ZZZHLQCUbGQMgDjmuOIlDg2ukH7ZbzXQQajkqzJm96cckDCEpRbiZGY2p6J8MTNJoZmN16Ok0PxaAeEkk6BTB5esP38WqkPjo9wd7DeRFqzH/8Ti6ylmPRLULq4j3wYY7p8XwgUmh1aDvckNLWNgA14QXXDEtF0ABvfuY0EZh53k9dqDUqzUJTKp7nwwSqCZa3O7nl1AGbnvAqQlgl0O3KSk74pILqpt0uANrN9YGF1XhSvz4Euyw9yTQlLcMmiqY9keJY8A3sl//DhA2F5cBjcReK9gVQ8EWPHoJ7OkMeEGy3EhK9F7u6H6qBoA50v+ZwpzOYj53x8FDFasRkI8kt0Cg6J3dS4tgUGdrgQm7QFz0HChD4tC4OnuKSGYmOUlMUoPq21rKjAakxCcfPB7qJKuy9/Ll7jhmSHiKRy95DFVhWJdhDrCwCEQqReuysLBTSrq8LtSCn8G+XvMSX8qN+c1Vq8PZjzV81l5db8q3AeT9Z4nQzqskG8pQidI4oTXyOLQdjXlX3Aq2yVvPcnN0l5cGoZ2YKFFcQ9sR/42XsG9k=";
+    // Contoh ciphertext hasil encrypt halaman kontak dengan passphrase kosong
+    const encryptedData = "U2FsdGVkX1+l7VnDyB5k8Lj4xa1h5RhZ8V2tCp4aNMN7csus3H2S6jLoGGqCgfbTG0q9v2PSaXi6C8T2LwYmMLtLf4mzLKv3zXUtRYZckdC28j+Fs+scKScLYojXukqGmRA0t1PYnp5Ud6Wfwd1evCqzAVtcYFVZd5F6m8LHT+LoCehIVoK8eEn4v/YXg9kDuK4pThXqw6RsIxDiyD7lqHcQLO6r3czt5gYK+bMZgZ7jOSwUQn7pTqC4vMUl7nT2OHHmfBd8KN7T3m7QjX77JP4yY8rPxjQkxW8vnxBjsXqoiU2JySp2L3mDjvIzmGbLm0/0igfHZbC1DQqok2/txuQ==";
 
-    // Fungsi decrypt tanpa passphrase (karena sudah terenkripsi tanpa kunci)
-    function decryptAES(encrypted) {
-      // Karena data sudah menggunakan salt & key default CryptoJS (karena kunci kosong), kita bisa pakai ini
-      // Namun agar pasti, saya coba decrypt dengan empty string sebagai key:
+    function decryptWithPassphrase(ciphertext, passphrase='') {
       try {
-        const key = CryptoJS.enc.Utf8.parse(''); // key kosong
-        const decrypted = CryptoJS.AES.decrypt(encrypted, key, { format: CryptoJS.format.OpenSSL });
-        return decrypted.toString(CryptoJS.enc.Utf8);
-      } catch(e) {
+        const decrypted = CryptoJS.AES.decrypt(ciphertext, passphrase);
+        const result = decrypted.toString(CryptoJS.enc.Utf8);
+        return result;
+      } catch (e) {
         return null;
       }
     }
 
-    // Fungsi decrypt standar CryptoJS dengan key kosong harus pakai .decrypt dengan passphrase
-    // Jadi pakai decrypt dengan passphrase kosong
-    function decryptWithPassphrase(encrypted, passphrase = '') {
-      try {
-        const decrypted = CryptoJS.AES.decrypt(encrypted, passphrase);
-        return decrypted.toString(CryptoJS.enc.Utf8);
-      } catch(e) {
-        return null;
-      }
-    }
-
-    // Main
     window.onload = function() {
-      // Decrypt pakai passphrase kosong
       const html = decryptWithPassphrase(encryptedData, '');
 
       if(html && html.length > 0) {
@@ -63,8 +49,6 @@
         const container = document.getElementById('decrypted-content');
         container.style.display = 'block';
         container.innerHTML = html;
-
-        // Karena konten punya link ke Bootstrap & FontAwesome dan script EmailJS, kita inject juga secara manual:
         addDependencies();
       } else {
         document.getElementById('loading').textContent = 'Gagal memuat konten.';
@@ -99,11 +83,8 @@
       scriptEmailJS.src = 'https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js';
       document.body.appendChild(scriptEmailJS);
 
-      // Init EmailJS dan form submit handler setelah EmailJS siap
       scriptEmailJS.onload = () => {
         emailjs.init('p3Z-M_PBNyMnwSvgW'); // public key
-
-        // Setelah jQuery dan EmailJS siap, pasang event listener
         scriptJQ.onload = () => {
           $('#contactForm').on('submit', function(e) {
             e.preventDefault();
