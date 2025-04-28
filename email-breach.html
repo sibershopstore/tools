@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <title>Coming Soon - Siber Shop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      background-color: #f8f9fa;
+    }
+    main {
+      flex: 1 0 auto;
+    }
+    header {
+      background-color: #343a40;
+    }
+    .navbar-brand, .nav-link {
+      color: #fff !important;
+    }
+    footer {
+      flex-shrink: 0;
+      background-color: #343a40;
+      color: white;
+      text-align: center;
+      padding: 15px 0;
+      font-size: 0.9rem;
+    }
+    .coming-soon-container {
+      height: 60vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      color: #343a40;
+    }
+    .rocket {
+      font-size: 6rem;
+      animation: rocketMove 2.5s infinite alternate ease-in-out;
+      margin-bottom: 20px;
+      color: #ff5722;
+      text-shadow:
+        0 0 10px #ff5722,
+        0 0 20px #ff5722,
+        0 0 30px #ff5722,
+        0 0 40px #ff5722;
+    }
+    @keyframes rocketMove {
+      0% { transform: translateY(0) rotate(0deg); }
+      100% { transform: translateY(-20px) rotate(15deg); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <nav class="navbar navbar-expand-lg navbar-dark container">
+      <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved"></i> Siber Shop</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
+          <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </nav>
+  </header>
+
+  <!-- Main Content -->
+  <main class="container my-5">
+    <div class="coming-soon-container">
+      <i class="fa-solid fa-rocket rocket"></i>
+      <h2>Segera Hadir!</h2>
+      <p class="lead">Tools Email Breach Checker sedang dalam pengembangan. Nantikan fitur terbaru dari Siber Shop.</p>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    &copy; 2025 Siber Shop Store - All Rights Reserved
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
