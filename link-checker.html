@@ -133,12 +133,21 @@ document.getElementById('linkCheckerForm').addEventListener('submit', async func
   loading.style.display = 'block';
 
   try {
-    const response = await fetch(urlInput, {
-      method: 'HEAD',
-      redirect: 'follow',
-    });
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(urlInput)}`;
 
-    const finalURL = response.url || urlInput;
+    const response = await fetch(proxyUrl);
+    if (!response.ok) throw new Error('Gagal mengambil data');
+
+    const data = await response.json();
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(data.contents, 'text/html');
+    let finalURL = urlInput; // Default ke URL input
+
+    // Cek jika ada canonical URL di halaman
+    const canonical = doc.querySelector('link[rel="canonical"]');
+    if (canonical && canonical.href) {
+      finalURL = canonical.href;
+    }
 
     resultLink.value = finalURL;
     visitLink.href = finalURL;
@@ -156,11 +165,12 @@ document.getElementById('linkCheckerForm').addEventListener('submit', async func
 document.getElementById('copyBtn').addEventListener('click', function() {
   const linkField = document.getElementById('resultLink');
   linkField.select();
-  linkField.setSelectionRange(0, 99999); // Untuk mobile
+  linkField.setSelectionRange(0, 99999);
   document.execCommand('copy');
   alert('Link berhasil disalin!');
 });
 </script>
+
 
 </body>
 </html>
