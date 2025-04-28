@@ -6,62 +6,37 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-   <style>
+  <style>
     html, body {
       height: 100%;
       margin: 0;
-      padding: 0;
-    }
-    body {
       display: flex;
       flex-direction: column;
       background-color: #f8f9fa;
     }
-    .navbar {
-      background-color: #212529;
+    main {
+      flex: 1 0 auto;
+    }
+    header {
+      background-color: #343a40;
     }
     .navbar-brand, .nav-link {
-      color: white !important;
-    }
-    .navbar-brand {
-      font-weight: bold;
-      font-size: 1.5rem;
-    }
-    .nav-link.active {
-      font-weight: bold;
-    }
-    main {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 20px;
-    }
-    .tool-box {
-      background-color: white;
-      border-radius: 10px;
-      padding: 30px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 700px;
+      color: #fff !important;
+      font-weight: 500;
     }
     footer {
-      background-color: #212529;
-      color: #fff;
+      flex-shrink: 0;
+      background-color: #343a40;
+      color: white;
       text-align: center;
-      padding: 15px 20px;
+      padding: 15px 0;
       font-size: 0.9rem;
     }
-    dl {
-      background-color: #f8f9fa;
-      padding: 20px;
-      border-radius: 5px;
-    }
-    dt {
-      font-weight: bold;
-    }
-    dd {
-      margin-bottom: 10px;
+    .form-checker {
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      padding: 30px;
     }
   </style>
 </head>
@@ -69,42 +44,49 @@
 
   <!-- Header -->
   <header>
-    <nav class="navbar navbar-expand-lg navbar-dark container">
-      <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved"></i> Siber Shop</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
-          <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
-          <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
-          <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
-        </ul>
+    <nav class="navbar navbar-expand-lg navbar-dark">
+      <div class="container">
+        <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved"></i> Siber Shop</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+          <ul class="navbar-nav ms-auto">
+            <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
+            <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
+            <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
+            <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+          </ul>
+        </div>
       </div>
     </nav>
   </header>
 
   <!-- Main Content -->
   <main class="container my-5">
-    <div class="text-center mb-4">
+    <div class="text-center mb-5">
       <i class="fa-solid fa-link fa-3x text-warning mb-3"></i>
       <h2>Link Redirect Checker</h2>
-      <p class="lead">Temukan tujuan asli dari link yang diperpendek atau dialihkan.</p>
+      <p class="lead">Cari tahu tujuan asli dari link pendek atau redirect.</p>
     </div>
     <div class="row justify-content-center">
-      <div class="col-md-6">
-        <form id="redirectForm">
-          <div class="input-group mb-3">
-            <input type="url" class="form-control" id="shortUrl" placeholder="Masukkan link pendek (bit.ly, s.id, dll)" required>
-            <button class="btn btn-warning" type="submit">Periksa</button>
+      <div class="col-lg-6 col-md-8">
+        <div class="form-checker">
+          <form id="redirectForm">
+            <div class="mb-3">
+              <label for="shortUrl" class="form-label">Masukkan Link Pendek</label>
+              <input type="url" class="form-control" id="shortUrl" placeholder="Contoh: https://bit.ly/xyz123" required>
+            </div>
+            <div class="d-grid">
+              <button class="btn btn-warning" type="submit">Periksa Link</button>
+            </div>
+          </form>
+          <div class="mt-4 alert alert-info d-none" id="resultBox">
+            <strong>URL Asli:</strong> <br><span id="resolvedUrl">Menunggu hasil...</span>
           </div>
-        </form>
-        <div class="mt-4 alert alert-info d-none" id="resultBox">
-          <strong>URL Asli:</strong> <span id="resolvedUrl">Menunggu hasil...</span>
-        </div>
-        <div class="alert alert-danger d-none mt-3" id="errorBox">
-          Gagal menemukan redirect URL. Pastikan link valid.
+          <div class="alert alert-danger d-none mt-3" id="errorBox">
+            Gagal menemukan redirect URL. Pastikan link valid.
+          </div>
         </div>
       </div>
     </div>
@@ -115,11 +97,37 @@
     &copy; 2025 Siber Shop Store - All Rights Reserved
   </footer>
 
-  <!-- Bootstrap JS -->
+  <!-- Bootstrap Bundle JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Script Encrypted -->
   <script>
-    (function(){const a=document.getElementById('redirectForm'),b=document.getElementById('resultBox'),c=document.getElementById('resolvedUrl'),d=document.getElementById('errorBox');a.addEventListener('submit',async function(e){e.preventDefault();const f=document.getElementById('shortUrl').value;b.classList.add('d-none');d.classList.add('d-none');try{const g='https://unshorten.'+'me/json/'+encodeURIComponent(f),h=await fetch(g),i=await h.json();if(i&&i.resolved_url){c.innerText=i.resolved_url;b.classList.remove('d-none')}else throw new Error('No redirect found')}catch(j){d.classList.remove('d-none')}})})();
-    </script>
-    
+    (function(){
+      const form=document.getElementById('redirectForm'),
+            resultBox=document.getElementById('resultBox'),
+            resolvedUrl=document.getElementById('resolvedUrl'),
+            errorBox=document.getElementById('errorBox');
+      form.addEventListener('submit',async function(e){
+        e.preventDefault();
+        const shortUrl=document.getElementById('shortUrl').value.trim();
+        resultBox.classList.add('d-none');
+        errorBox.classList.add('d-none');
+        try{
+          const apiUrl='https://unshorten.'+'me/json/'+encodeURIComponent(shortUrl),
+                response=await fetch(apiUrl),
+                data=await response.json();
+          if(data && data.resolved_url){
+            resolvedUrl.innerText=data.resolved_url;
+            resultBox.classList.remove('d-none');
+          }else{
+            throw new Error('No redirect found');
+          }
+        }catch(err){
+          errorBox.classList.remove('d-none');
+        }
+      });
+    })();
+  </script>
+
 </body>
 </html>
