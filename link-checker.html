@@ -2,8 +2,8 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Link Redirect Checker - Siber Shop</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WHOIS Checker - Siber Shop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
@@ -11,6 +11,7 @@
       height: 100%;
       margin: 0;
       padding: 0;
+      font-family: 'Poppins', sans-serif;
     }
     body {
       display: flex;
@@ -39,18 +40,49 @@
     }
     .tool-box {
       background-color: white;
-      border-radius: 10px;
+      border-radius: 12px;
       padding: 30px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
       width: 100%;
       max-width: 700px;
+      transition: 0.3s;
+    }
+    .tool-box:hover {
+      box-shadow: 0 12px 30px rgba(0,0,0,0.15);
     }
     footer {
       background-color: #212529;
-      color: white;
+      color: #fff;
       text-align: center;
       padding: 15px 20px;
       font-size: 0.9rem;
+    }
+    #result {
+      word-wrap: break-word;
+      overflow-wrap: break-word;
+      white-space: pre-wrap;
+      background-color: #f1f1f1;
+      padding: 20px;
+      border-radius: 10px;
+      margin-top: 10px;
+      font-size: 0.95rem;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .copy-btn {
+      margin-top: 15px;
+      width: 100%;
+    }
+    dl {
+      padding: 0;
+    }
+    dt {
+      font-weight: bold;
+      margin-top: 10px;
+    }
+    dd {
+      margin-bottom: 5px;
+      margin-left: 0;
     }
   </style>
 </head>
@@ -77,26 +109,20 @@
 <!-- Main Content -->
 <main>
   <div class="tool-box">
-    <div class="text-center mb-4">
-      <i class="fa-solid fa-link fa-3x text-warning mb-3"></i>
-      <h4>Link Redirect Checker</h4>
-      <p class="lead">Temukan tujuan asli dari link yang diperpendek atau dialihkan.</p>
-    </div>
-    <form id="redirectForm">
+    <h2 class="text-center mb-4">WHOIS Checker</h2>
+    <form id="whoisForm">
       <div class="mb-3">
-        <label for="shortUrl" class="form-label">Masukkan Link Pendek</label>
-        <input type="url" class="form-control" id="shortUrl" placeholder="contoh: https://bit.ly/abcd123" required>
+        <label for="domainInput" class="form-label">Masukkan Nama Domain</label>
+        <input type="text" id="domainInput" class="form-control" placeholder="contoh: example.com" required>
       </div>
-      <button class="btn btn-warning w-100" type="submit">Periksa</button>
+      <button type="submit" class="btn btn-primary w-100">Cek WHOIS</button>
     </form>
     <div class="mt-4">
       <h5>Hasil:</h5>
-      <div id="resultBox" class="alert alert-info d-none">
-        <strong>URL Asli:</strong> <span id="resolvedUrl">Menunggu hasil...</span>
+      <div id="result">
+        Belum ada hasil.
       </div>
-      <div id="errorBox" class="alert alert-danger d-none">
-        Gagal menemukan redirect URL. Pastikan link valid.
-      </div>
+      <button id="copyButton" class="btn btn-success copy-btn" style="display:none;">Copy Hasil</button>
     </div>
   </div>
 </main>
@@ -106,34 +132,66 @@
   &copy; 2025 Siber Shop Store - All Rights Reserved
 </footer>
 
-<!-- Bootstrap JS -->
+<!-- Scripts -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 (function(){
-  const form = document.getElementById('redirectForm');
-  const resultBox = document.getElementById('resultBox');
-  const resolvedUrl = document.getElementById('resolvedUrl');
-  const errorBox = document.getElementById('errorBox');
+  const whoisForm = document.getElementById('whoisForm');
+  const resultDiv = document.getElementById('result');
+  const copyButton = document.getElementById('copyButton');
 
-  form.addEventListener('submit', async function(e){
+  whoisForm.addEventListener('submit', async function(e){
     e.preventDefault();
-    const shortUrl = document.getElementById('shortUrl').value.trim();
-    resultBox.classList.add('d-none');
-    errorBox.classList.add('d-none');
+    const domain = document.getElementById('domainInput').value.trim();
+    resultDiv.innerHTML = '<p>Sedang memproses...</p>';
+    copyButton.style.display = "none";
+
+    const apiKeyPart1 = 'at_NVM5iEYAcDlkCrFbjtvQx';
+    const apiKeyPart2 = 'a0kLbCLm';
+    const url = `https://www.whoisxmlapi.com/whoisserver/WhoisService?apiKey=${apiKeyPart1}${apiKeyPart2}&domainName=${encodeURIComponent(domain)}&outputFormat=JSON`;
 
     try {
-      const apiUrl = 'https://unshorten.'+'me/json/'+encodeURIComponent(shortUrl);
-      const response = await fetch(apiUrl);
+      const response = await fetch(url);
+      if (!response.ok) throw new Error('Gagal mengambil data');
+
       const data = await response.json();
-      if (data && data.resolved_url) {
-        resolvedUrl.innerText = data.resolved_url;
-        resultBox.classList.remove('d-none');
-      } else {
-        throw new Error('No redirect found');
-      }
+      const record = data.WhoisRecord || {};
+
+      resultDiv.innerHTML = `
+        <dl>
+          <dt>Domain Name</dt><dd>${record.domainName || '-'}</dd>
+          <dt>Registrar</dt><dd>${record.registrarName || '-'}</dd>
+          <dt>Registrant Organization</dt><dd>${record.registrant?.organization || '-'}</dd>
+          <dt>Registrant Name</dt><dd>${record.registrant?.name || '-'}</dd>
+          <dt>Registrant Email</dt><dd>${record.registrant?.email || '-'}</dd>
+          <dt>Registrant Country</dt><dd>${record.registrant?.country || '-'}</dd>
+          <dt>Admin Organization</dt><dd>${record.administrativeContact?.organization || '-'}</dd>
+          <dt>Admin Name</dt><dd>${record.administrativeContact?.name || '-'}</dd>
+          <dt>Admin Email</dt><dd>${record.administrativeContact?.email || '-'}</dd>
+          <dt>Admin Country</dt><dd>${record.administrativeContact?.country || '-'}</dd>
+          <dt>Technical Contact</dt><dd>${record.technicalContact?.email || '-'}</dd>
+          <dt>Created Date</dt><dd>${record.createdDate || '-'}</dd>
+          <dt>Updated Date</dt><dd>${record.updatedDate || '-'}</dd>
+          <dt>Expires Date</dt><dd>${record.expiresDate || '-'}</dd>
+          <dt>Name Servers</dt><dd>${record.nameServers?.hostNames?.join(', ') || '-'}</dd>
+          <dt>Status</dt><dd>${record.status || '-'}</dd>
+        </dl>
+      `;
+      copyButton.style.display = "block";
     } catch (error) {
-      errorBox.classList.remove('d-none');
+      resultDiv.innerHTML = '<p class="text-danger">Terjadi kesalahan saat memuat data WHOIS.</p>';
     }
+  });
+
+  copyButton.addEventListener('click', function(){
+    const text = resultDiv.innerText;
+    navigator.clipboard.writeText(text)
+      .then(() => {
+        alert('Hasil berhasil disalin ke clipboard!');
+      })
+      .catch(err => {
+        alert('Gagal menyalin: ' + err);
+      });
   });
 })();
 </script>
