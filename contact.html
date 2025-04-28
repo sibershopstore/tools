@@ -113,38 +113,60 @@
     &copy; 2025 Siber Shop Store - All Rights Reserved
   </footer>
 
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script>
-(function(_0x35b2c6,_0x20f0b7){const _0x384005=function(_0x551f2b){while(--_0x551f2b){_0x35b2c6['push'](_0x35b2c6['shift']());}};_0x384005(++_0x20f0b7);}(_0x35b2,['alert','Pesan berhasil dikirim!','getElementById','contactForm','preventDefault','sendForm','service_oa6m0ze','template_j6824jx','then','reset','Gagal mengirim pesan, coba lagi nanti.','error','FAILED...','log','init','p3Z-M_PBNyMnwSvgW','addEventListener','submit'],0x10a));
-const _0x5e84=function(_0x35b2c6,_0x20f0b7){_0x35b2c6=_0x35b2c6-0x0;let _0x384005=_0x35b2[_0x35b2c6];return _0x384005;};
-(function(){emailjs[_0x5e84('0xe')](_0x5e84('0xf'));})();
-document[_0x5e84('0x2')](_0x5e84('0x3'))[_0x5e84('0x10')](_0x5e84('0x11'),function(_0x3c18d6){
-_0x3c18d6[_0x5e84('0x4')]();
-emailjs[_0x5e84('0x5')](_0x5e84('0x6'),_0x5e84('0x7'),this)[_0x5e84('0x8')](function(){
-window[_0x5e84('0x0')](_0x5e84('0x1'));
-document[_0x5e84('0x2')](_0x5e84('0x3'))[_0x5e84('0x9')]();
-},function(_0x15c134){
-window[_0x5e84('0x0')](_0x5e84('0xa'));
-console[_0x5e84('0xd')](_0x5e84('0xc'),_0x15c134);
-});
-});
-
-// Anti Debugging Protection
 (function(){
-  function _0xantiDebug(){
-    try{
-      (function(){
-        return !0;
-      })()['constructor']('debugger')();
-    }catch(_0xerr){
-      setTimeout(_0xantiDebug,100);
-    }
+  function obf_init(){
+    var part1 = 'p3Z-M_';
+    var part2 = 'PBNyMn';
+    var part3 = 'wSvgW';
+    var userID = part1 + part2 + part3;
+    emailjs.init(userID);
   }
-  _0xantiDebug();
+
+  function obf_sendForm(e){
+    e.preventDefault();
+    var s1 = 'serv';
+    var s2 = 'ice_oa6m0';
+    var s3 = 'ze';
+    var serviceID = s1 + s2 + s3;
+
+    var t1 = 'templ';
+    var t2 = 'ate_j68';
+    var t3 = '24jx';
+    var templateID = t1 + t2 + t3;
+
+    emailjs.sendForm(serviceID, templateID, document.getElementById('contactForm'))
+    .then(function(){
+      alert('Pesan berhasil dikirim!');
+      document.getElementById('contactForm').reset();
+    }, function(error){
+      alert('Gagal mengirim pesan, coba lagi nanti.');
+      console.error('FAILED...', error);
+    });
+  }
+
+  document.addEventListener('DOMContentLoaded', function(){
+    obf_init();
+    document.getElementById('contactForm').addEventListener('submit', obf_sendForm);
+  });
+
+  // Anti Debugging Proteksi
+  (function protect(){
+    function detectDevTools(){
+      const threshold = 160;
+      setInterval(function(){
+        if (window.outerWidth - window.innerWidth > threshold || window.outerHeight - window.innerHeight > threshold){
+          alert('Developer Tools terdeteksi! Menutup halaman.');
+          window.location.href = 'about:blank';
+        }
+      }, 500);
+    }
+    detectDevTools();
+  })();
 })();
 </script>
+
 
 </body>
 </html>
