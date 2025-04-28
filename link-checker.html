@@ -133,20 +133,14 @@ document.getElementById('linkCheckerForm').addEventListener('submit', async func
   loading.style.display = 'block';
 
   try {
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(urlInput)}`;
+    // Pakai AllOrigins RAW supaya langsung akses tanpa CORS error
+    const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(urlInput)}`;
 
-    const response = await fetch(proxyUrl);
-    if (!response.ok) throw new Error('Gagal mengambil data');
+    const response = await fetch(proxyUrl, { redirect: "follow" });
 
-    const data = await response.json();
-    const parser = new DOMParser();
-    const doc = parser.parseFromString(data.contents, 'text/html');
-    let finalURL = urlInput; // Default ke URL input
-
-    // Cek jika ada canonical URL di halaman
-    const canonical = doc.querySelector('link[rel="canonical"]');
-    if (canonical && canonical.href) {
-      finalURL = canonical.href;
+    let finalURL = response.url; // Ambil URL hasil akhir redirect
+    if (!finalURL || finalURL === proxyUrl) {
+      finalURL = urlInput;
     }
 
     resultLink.value = finalURL;
@@ -170,7 +164,5 @@ document.getElementById('copyBtn').addEventListener('click', function() {
   alert('Link berhasil disalin!');
 });
 </script>
-
-
 </body>
 </html>
