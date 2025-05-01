@@ -17,20 +17,23 @@
       display: flex;
       flex-direction: column;
     }
-
     /* === NAVBAR === */
     .navbar {
       background-color: #212529;
-      padding: 0.75rem 0;
+      padding-top: 0.75rem;
+      padding-bottom: 0.75rem;
+    }
+    .navbar .container {
+      padding-left: 1rem;
+      padding-right: 1rem;
     }
     .navbar-brand {
       font-size: 1.5rem;
       font-weight: bold;
       color: #fff !important;
-      padding-left: 1rem;
     }
     .navbar-toggler {
-      margin-right: 1rem;
+      border-color: rgba(255,255,255,0.3);
     }
     .nav-link {
       color: #fff !important;
@@ -42,7 +45,6 @@
       color: #ffc107 !important;
       font-weight: bold;
     }
-
     /* === MAIN === */
     main {
       flex: 1;
@@ -59,7 +61,6 @@
       max-width: 600px;
       width: 100%;
     }
-
     /* === RESULTS === */
     .result-box {
       border: 1px solid #dee2e6;
@@ -69,22 +70,20 @@
       word-break: break-all;
     }
     .result-box a {
-      text-decoration: none;
       color: #0d6efd;
+      text-decoration: none;
     }
-
     /* === FOOTER === */
     footer {
       background-color: #212529;
       color: #fff;
       text-align: center;
-      padding: 15px 20px;
+      padding: 1rem 0;
       font-size: 0.9rem;
     }
-
     /* === RESPONSIVE === */
     @media (max-width: 576px) {
-      .navbar-brand { font-size: 1.3rem; padding-left: 0.5rem; }
+      .navbar-brand { font-size: 1.3rem; }
       .nav-link { font-size: 0.95rem; padding: 0.4rem 0.8rem; }
       footer { font-size: 0.85rem; }
       .tool-box { padding: 1.5rem; }
@@ -95,7 +94,7 @@
 
   <!-- Header -->
   <nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container-fluid">
+    <div class="container">
       <a class="navbar-brand" href="index.html">
         <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
       </a>
@@ -125,7 +124,7 @@
       <form id="waForm">
         <div class="mb-3">
           <label for="phoneNumber" class="form-label">Nomor WhatsApp (tanpa +62)</label>
-          <input type="tel" class="form-control" id="phoneNumber" placeholder="contoh: 81234567890" required>
+          <input type="tel" class="form-control" id="phoneNumber" placeholder="81234567890" required>
         </div>
         <div class="mb-3">
           <label for="message" class="form-label">Pesan Default</label>
@@ -167,21 +166,17 @@
       const msg   = encodeURIComponent(document.getElementById('message').value.trim());
       const fullLink = `https://wa.me/62${phone}?text=${msg}`;
 
-      // Shorten via TinyURL
+      // Shorten
       let shortLink = fullLink;
       try {
         const res = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(fullLink)}`);
         if (res.ok) shortLink = await res.text();
-      } catch(_) { /* fallback */ }
+      } catch {}
 
-      // Update link
-      const linkEl = document.getElementById('waLink');
-      linkEl.href = shortLink;
-      linkEl.textContent = shortLink;
-
-      // QR Code
-      const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shortLink)}`;
-      document.getElementById('waQr').src = qrUrl;
+      // Update link & QR
+      document.getElementById('waLink').href = shortLink;
+      document.getElementById('waLink').textContent = shortLink;
+      document.getElementById('waQr').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(shortLink)}`;
 
       document.getElementById('waResult').classList.remove('d-none');
     });
