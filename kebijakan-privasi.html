@@ -12,69 +12,73 @@
     html, body {
       height: 100%;
       margin: 0;
-      padding: 0;
-      background-color: #f8f9fa;
       display: flex;
       flex-direction: column;
+      background-color: #f8f9fa;
     }
-    /* Header */
+    /* ===== HEADER ===== */
     .navbar {
       background-color: #212529;
-      padding: .5rem 0;
+      padding: 0.5rem 0;
     }
-    .navbar .container {
+    .navbar .container-fluid {
       padding-left: 0.5rem;
       padding-right: 0.5rem;
     }
     .navbar-brand {
+      color: #fff !important;
       font-weight: bold;
       font-size: 1.5rem;
-      color: #fff !important;
     }
     .navbar-toggler {
-      margin-left: .5rem;
+      margin-left: 0.5rem;
       border: none;
     }
     .nav-link {
       color: #fff !important;
       font-size: 1rem;
-      padding: .5rem .75rem;
+      padding: 0.5rem 0.75rem;
     }
     .nav-link.active {
       font-weight: bold;
     }
-    @media (max-width: 576px) {
-      .navbar .container {
-        padding-left: .25rem;
-        padding-right: .25rem;
-      }
-      .navbar-brand {
-        font-size: 1.5rem;
-      }
-      .nav-link {
-        font-size: .95rem;
-        padding: .4rem .6rem;
+    @media (min-width: 992px) {
+      .navbar .container-fluid {
+        padding-left: 0;
+        padding-right: 0;
       }
     }
-    /* Main & Footer gaya sama seperti sebelumnya */
+
+    /* ===== MAIN ===== */
     main {
       flex: 1 0 auto;
       padding: 40px 20px;
     }
     .content-box {
-      background-color: #fff;
+      background-color: white;
       border-radius: 10px;
       padding: 27px;
       box-shadow: 0 0 15px rgba(0,0,0,0.1);
       max-width: 800px;
       margin: auto;
     }
+
+    /* ===== FOOTER ===== */
     footer {
       background-color: #212529;
       color: #fff;
       text-align: center;
       padding: 15px 20px;
-      font-size: .9rem;
+      font-size: 0.9rem;
+    }
+    @media (max-width: 576px) {
+      .navbar .container-fluid {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+      }
+      footer {
+        font-size: 0.85rem;
+      }
     }
   </style>
 </head>
@@ -82,7 +86,7 @@
 
   <!-- Header -->
   <nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container">
+    <div class="container-fluid">
       <a class="navbar-brand" href="index.html">
         <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
       </a>
@@ -94,7 +98,7 @@
           <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
           <li class="nav-item"><a class="nav-link active" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
           <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
-          <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
         </ul>
       </div>
     </div>
@@ -103,16 +107,32 @@
   <!-- Main Content -->
   <main>
     <div class="content-box">
-      <!-- ... seluruh konten Kebijakan Privasi di sini ... -->
+      <h2 class="mb-4 text-center">Kebijakan Privasi</h2>
+      <p><strong>Siber Shop Store</strong> berkomitmen untuk menjaga kepercayaan pengguna dengan transparansi penuh terkait privasi. Kami menghargai privasi setiap pengunjung dan ingin menegaskan bahwa:</p>
+      <ul>
+        <li>Situs ini <strong>tidak menyimpan data pribadi</strong> apa pun dari pengguna.</li>
+        <li>Semua tools dan layanan yang tersedia <strong>bersifat open source</strong> dan dapat diakses publik.</li>
+        <li>Situs ini memanfaatkan <strong>API publik dan private</strong> dari internet yang telah dienkripsi dan diamankan secara ketat.</li>
+      </ul>
+      <h5 class="mt-4">Transparansi & Keamanan</h5>
+      <p>Kami tidak melakukan pelacakan, tidak mengumpulkan cookies untuk tujuan komersial, dan tidak membagikan informasi ke pihak ketiga. Setiap interaksi yang dilakukan pengguna berlangsung secara lokal di browser tanpa penyimpanan server dari pihak kami.</p>
+      <h5 class="mt-4">Kode Terbuka</h5>
+      <p>Siber Shop didesain dengan prinsip keterbukaan. Kode sumber proyek ini dapat diperiksa, dipelajari, atau dikembangkan kembali oleh siapa saja. Kami percaya bahwa keterbukaan menciptakan transparansi dan kepercayaan.</p>
+      <h5 class="mt-4">Integrasi API</h5>
+      <p>Beberapa fitur kami terhubung dengan API eksternal (baik publik maupun private) untuk memberikan hasil yang akurat dan fungsionalitas maksimal. Semua komunikasi dilakukan secara terenkripsi dan tidak menyimpan data input pengguna.</p>
+      <h5 class="mt-4">Pembaruan Kebijakan</h5>
+      <p>Kebijakan privasi ini dapat diperbarui sewaktu-waktu. Perubahan signifikan akan diumumkan langsung di halaman ini.</p>
+      <h5 class="mt-4">Kontak Kami</h5>
+      <p>Jika ada pertanyaan atau klarifikasi lebih lanjut, silakan hubungi kami melalui halaman <a href="contact.html">Kontak</a>.</p>
+      <p class="mt-4 text-muted text-end">Terakhir diperbarui: 1 Mei 2025</p>
     </div>
   </main>
 
   <!-- Footer -->
   <footer>
-    &copy; 2025 Siber Shop Store - All Rights Reserved
+    &copy; 2025 Siber Shop Store — All Rights Reserved
   </footer>
 
-  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
