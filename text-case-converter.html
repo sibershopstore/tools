@@ -12,23 +12,27 @@
     /* ========== GLOBAL ========== */
     html, body {
       height: 100%;
-      margin: 0; padding: 0;
+      margin: 0;
+      padding: 0;
       background-color: #f8f9fa;
-    }
-    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
       display: flex;
       flex-direction: column;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
     /* ========== NAVBAR ========== */
     .navbar {
       background-color: #212529;
-      padding: 0.75rem 1rem;
+      padding-top: 0.75rem;
+      padding-bottom: 0.75rem;
     }
     .navbar-brand {
-      font-size: 1.25rem;
+      font-size: 1.3rem;
       font-weight: 600;
       color: #fff !important;
+      padding-left: 1rem;
+    }
+    .navbar-toggler {
+      margin-right: 1rem;
     }
     .navbar-nav .nav-link {
       color: #fff !important;
@@ -56,25 +60,18 @@
       max-width: 600px;
       width: 100%;
     }
-    /* ========== BUTTON GROUP ========== */
-    .btn-group-flex {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.5rem;
-    }
     /* ========== FOOTER ========== */
     footer {
       background-color: #212529;
-      color: #adb5bd;
+      color: #fff;
       text-align: center;
       padding: 1rem 0;
       font-size: 0.9rem;
     }
     /* ========== RESPONSIVE ========== */
     @media (max-width: 576px) {
-      .navbar-brand { font-size: 1.15rem; }
-      .navbar-nav .nav-link { font-size: 0.9rem; padding: 0.4rem 0.8rem; }
+      .navbar-brand { font-size: 1.2rem; }
+      .navbar-nav .nav-link { font-size: 0.95rem; padding: 0.4rem 0.8rem; }
       footer { font-size: 0.85rem; }
     }
   </style>
@@ -83,7 +80,7 @@
 
   <!-- Header -->
   <nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container">
+    <div class="container-fluid">
       <a class="navbar-brand" href="index.html">
         <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
       </a>
@@ -109,20 +106,16 @@
         <label for="inputText" class="form-label">Masukkan Teks</label>
         <textarea id="inputText" class="form-control" rows="5" placeholder="Ketik atau tempel teks di sini..."></textarea>
       </div>
-
-      <!-- tombol dikemas jadi grup responsif -->
-      <div class="btn-group-flex mb-3">
-        <button class="btn btn-primary" id="toSentence">Sentence Case</button>
-        <button class="btn btn-primary" id="toTitle">Title Case</button>
-        <button class="btn btn-primary" id="toUpper">UPPERCASE</button>
-        <button class="btn btn-primary" id="toLower">lowercase</button>
+      <div class="mb-3 text-center">
+        <button class="btn btn-primary me-2 mb-2" id="toSentence">Sentence Case</button>
+        <button class="btn btn-primary me-2 mb-2" id="toTitle">Title Case</button>
+        <button class="btn btn-primary me-2 mb-2" id="toUpper">UPPERCASE</button>
+        <button class="btn btn-primary mb-2" id="toLower">lowercase</button>
       </div>
-
       <div class="mb-3">
         <label for="outputText" class="form-label">Hasil</label>
         <textarea id="outputText" class="form-control" rows="5" readonly></textarea>
       </div>
-
       <div class="text-center">
         <button class="btn btn-outline-secondary" id="copyBtn">
           <i class="fa fa-copy me-1"></i> Salin Teks
@@ -148,19 +141,31 @@
     const toSentence  = document.getElementById('toSentence');
     const copyBtn     = document.getElementById('copyBtn');
 
+    // Capitalize first letter of each sentence
     function sentenceCase(str){
-      return str.toLowerCase()
+      return str
+        .toLowerCase()
         .replace(/([.!?]\s*|^)([a-z])/g, (m,p,c)=> p + c.toUpperCase());
     }
+    // Title Case (every word)
     function titleCase(str){
-      return str.toLowerCase()
+      return str
+        .toLowerCase()
         .replace(/\b\w/g, c=> c.toUpperCase());
     }
 
-    toUpper .addEventListener('click', ()=> outputText.value = inputText.value.toUpperCase());
-    toLower .addEventListener('click', ()=> outputText.value = inputText.value.toLowerCase());
-    toTitle .addEventListener('click', ()=> outputText.value = titleCase(inputText.value));
-    toSentence.addEventListener('click', ()=> outputText.value = sentenceCase(inputText.value));
+    toUpper.addEventListener('click', ()=> {
+      outputText.value = inputText.value.toUpperCase();
+    });
+    toLower.addEventListener('click', ()=> {
+      outputText.value = inputText.value.toLowerCase();
+    });
+    toTitle.addEventListener('click', ()=> {
+      outputText.value = titleCase(inputText.value);
+    });
+    toSentence.addEventListener('click', ()=> {
+      outputText.value = sentenceCase(inputText.value);
+    });
 
     copyBtn.addEventListener('click', ()=>{
       if(!outputText.value.trim()){
@@ -168,7 +173,7 @@
       }
       navigator.clipboard.writeText(outputText.value)
         .then(() => alert('Teks berhasil disalin!'))
-        .catch(()=> alert('Gagal menyalin teks.'));
+        .catch(() => alert('Gagal menyalin teks.'));
     });
   </script>
 </body>
