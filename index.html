@@ -1,219 +1,101 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <title>Tools - Siber Shop</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
- <style>
-    body {
-      background-color: #f8f9fa;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-      font-family: 'Poppins', sans-serif;
-    }
-    header {
-      background-color: #212529;
-      padding: 1px 0;
-    }
-    .navbar-brand {
-      font-size: 1.4rem;
-      font-weight: bold;
-      padding-left: 15px;
-    }
-    .nav-link {
-      color: #ffffff !important;
-      font-size: 1rem;
-      padding: 8px 15px;
-    }
-    .nav-link:hover {
-      color: #adb5bd !important;
-    }
-    .navbar-toggler {
-      border: none;
-      color: #fff;
-    }
-    main {
-      flex: 1;
-    }
-    footer {
-      background-color: #212529;
-      color: #fff;
-      text-align: center;
-      padding: 20px 0;
-      font-size: 0.9rem;
-    }
-    @media (max-width: 576px) {
-      .navbar-brand {
-        font-size: 1.4rem;
-        padding-left: 10px;
-      }
-      .nav-link {
-        font-size: 0.95rem;
-        padding: 8px 10px;
-      }
-      footer {
-        font-size: 0.85rem;
-      }
-    }
-    .search-section {
-      padding: 40px 20px;
-      background-color: #ffffff;
-    }
-    .tools-list {
-      padding: 20px;
-    }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Siber Tools - Koleksi Alat Gratis</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
     .tool-card {
-      border: 1px solid #dee2e6;
-      border-radius: 10px;
-      padding: 20px;
-      background: #fff;
-      transition: 0.3s;
+      transition: transform 0.3s;
     }
     .tool-card:hover {
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       transform: translateY(-5px);
+    }
+    @media (max-width: 576px) {
+      .navbar-brand span {
+        font-size: 1.1rem;
+      }
+      .navbar-toggler {
+        margin-right: 10px;
+      }
     }
   </style>
 </head>
 <body>
-
   <!-- Header -->
   <header>
-    <nav class="navbar navbar-expand-lg navbar-dark container">
-      <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved"></i> Siber Shop</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
-          <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
-          <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
-          <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
-        </ul>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-3">
+      <div class="container-fluid">
+        <a class="navbar-brand d-flex align-items-center" href="index.html">
+          <i class="fa-solid fa-shield-halved me-2"></i> <span style="font-size: 1.3rem;">Siber Shop</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+          <ul class="navbar-nav">
+            <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
+            <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
+            <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
+            <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
+          </ul>
+        </div>
       </div>
     </nav>
   </header>
 
-  <!-- Main -->
-  <main>
-    <section class="search-section" id="search">
-      <div class="container text-center">
-        <h2 class="mb-4">Cari Tools Siber Shop</h2>
-        <div class="input-group mb-3 mx-auto" style="max-width: 500px;">
-          <input type="text" id="searchInput" class="form-control" placeholder="Ketik nama tools...">
-          <button class="btn btn-dark" type="button"><i class="fa fa-search"></i></button>
+  <!-- Hero Section -->
+  <section class="bg-primary text-white text-center py-5">
+    <div class="container">
+      <h1 class="display-4">Siber Tools</h1>
+      <p class="lead">Koleksi alat gratis untuk kebutuhan digitalmu</p>
+    </div>
+  </section>
+
+  <!-- Tools Section -->
+  <section class="py-5">
+    <div class="container">
+      <div class="row g-4">
+        <div class="col-md-4">
+          <div class="card tool-card h-100">
+            <div class="card-body">
+              <h5 class="card-title">Text Case Converter</h5>
+              <p class="card-text">Ubah teks menjadi UPPERCASE, lowercase, Capitalized, dan lainnya.</p>
+              <a href="text-case-converter.html" class="btn btn-primary">Gunakan</a>
+            </div>
+          </div>
         </div>
+        <div class="col-md-4">
+          <div class="card tool-card h-100">
+            <div class="card-body">
+              <h5 class="card-title">Link Checker</h5>
+              <p class="card-text">Periksa apakah sebuah link masih aktif dan valid.</p>
+              <a href="link-checker.html" class="btn btn-primary">Gunakan</a>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card tool-card h-100">
+            <div class="card-body">
+              <h5 class="card-title">Password Strength Checker</h5>
+              <p class="card-text">Periksa kekuatan dan keamanan password kamu.</p>
+              <a href="password-checker.html" class="btn btn-primary">Gunakan</a>
+            </div>
+          </div>
+        </div>
+        <!-- Tambahkan tools lainnya di sini -->
+        
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="tools-list container">
-      <div class="row g-4" id="toolsContainer">
-
-        <div class="col-md-4 tool-item">
-          <div class="tool-card text-center">
-            <i class="fa-solid fa-key fa-2x mb-3 text-success"></i>
-            <h5>Cek Kekuatan Password</h5>
-            <p>Periksa seberapa kuat password kamu terhadap serangan brute force.</p>
-            <a href="password-checker.html" class="btn btn-sm btn-outline-success">Gunakan</a>
-          </div>
-        </div>
-
-        <div class="col-md-4 tool-item">
-          <div class="tool-card text-center">
-            <i class="fa-solid fa-link fa-2x mb-3 text-warning"></i>
-            <h5>Link Checker</h5>
-            <p>Cek apakah sebuah link aman dikunjungi atau mengandung ancaman.</p>
-            <a href="link-checker.html" class="btn btn-sm btn-outline-warning">Gunakan</a>
-          </div>
-        </div>
-
-        <div class="col-md-4 tool-item">
-          <div class="tool-card text-center">
-            <i class="fa-solid fa-envelope fa-2x mb-3 text-primary"></i>
-            <h5>Email Breach Checker</h5>
-            <p>Pastikan email kamu tidak bocor di database publik atau dark web.</p>
-            <a href="email-breach.html" class="btn btn-sm btn-outline-primary">Gunakan</a>
-          </div>
-        </div>
-
-        <div class="col-md-4 tool-item">
-          <div class="tool-card text-center">
-            <i class="fa-solid fa-user-xmark fa-2x mb-3 text-danger"></i>
-            <h5>Account Checker</h5>
-            <p>Cek apakah akun kamu masih aktif atau sudah terhapus dari platform tertentu.</p>
-            <a href="account-checker.html" class="btn btn-sm btn-outline-danger">Gunakan</a>
-          </div>
-        </div>
-
-        <div class="col-md-4 tool-item">
-          <div class="tool-card text-center">
-            <i class="fa-solid fa-shield-virus fa-2x mb-3 text-secondary"></i>
-            <h5>URL Scanner</h5>
-            <p>Scan sebuah URL untuk memastikan tidak mengandung malware atau phishing.</p>
-            <a href="url-scanner.html" class="btn btn-sm btn-outline-secondary">Gunakan</a>
-          </div>
-        </div>
-
-        <div class="col-md-4 tool-item">
-          <div class="tool-card text-center">
-            <i class="fa-solid fa-globe fa-2x mb-3 text-info"></i>
-            <h5>WHOIS Checker</h5>
-            <p>Cek informasi domain seperti pemilik, lokasi, dan tanggal kedaluwarsa.</p>
-            <a href="whois-checker.html" class="btn btn-sm btn-outline-info">Gunakan</a>
-          </div>
-        </div>
-
-        <div class="col-md-4 tool-item">
-          <div class="tool-card text-center">
-            <i class="fa-solid fa-file-invoice-dollar fa-2x mb-3 text-success"></i>
-            <h5>Invoice Generator</h5>
-            <p>Buat invoice profesional dengan cepat dan mudah untuk klien kamu.</p>
-            <a href="invoice-generator.html" class="btn btn-sm btn-outline-success">Gunakan</a>
-          </div>
-        </div>
-
-        <div class="col-md-4 tool-item">
-          <div class="tool-card text-center">
-            <i class="fa-brands fa-whatsapp fa-2x mb-3 text-success"></i>
-            <h5>WA Link Generator</h5>
-            <p>Buat link WhatsApp otomatis untuk mempermudah pelanggan menghubungimu.</p>
-            <a href="wa-generator.html" class="btn btn-sm btn-outline-success">Gunakan</a>
-          </div>
-        </div>
-
-        <div class="col-md-4 tool-item">
-          <div class="tool-card text-center">
-            <i class="fa-solid fa-font fa-2x mb-3 text-primary"></i>
-            <h5>Text Case Converter</h5>
-            <p>Ubah teks ke berbagai format huruf: uppercase, lowercase, capitalized, dan sentence case.</p>
-            <a href="text-case-converter.html" class="btn btn-sm btn-outline-primary">Gunakan</a>
-          </div>
-        </div>
-
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    &copy; 2025 Siber Shop Store - All Rights Reserved
+  <!-- Footer -->
+  <footer class="bg-dark text-white text-center py-3">
+    <p class="mb-0">&copy; 2024 Siber Shop. All rights reserved.</p>
   </footer>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
-    const searchInput = document.getElementById('searchInput');
-    const toolItems = document.querySelectorAll('.tool-item');
-    searchInput.addEventListener('input', () => {
-      const keyword = searchInput.value.toLowerCase();
-      toolItems.forEach(item => {
-        const text = item.innerText.toLowerCase();
-        item.style.display = text.includes(keyword) ? 'block' : 'none';
-      });
-    });
-  </script>
-
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
