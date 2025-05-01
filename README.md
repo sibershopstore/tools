@@ -1,9 +1,39 @@
 # 🚀 Siber Shop - Website Tools & Layanan Digital
 
-[![Made with Bootstrap](https://img.shields.io/badge/Made%20with-Bootstrap-7952B3?style=flat-square&logo=bootstrap&logoColor=white)](https://getbootstrap.com/)  
-[![Powered by EmailJS](https://img.shields.io/badge/Powered%20by-EmailJS-F57C00?style=flat-square)](https://www.emailjs.com/)  
-[![Instagram](https://img.shields.io/badge/Follow-@sibershopstore-E4405F?style=flat-square&logo=instagram&logoColor=white)](https://instagram.com/sibershopstore)  
-[![LinkedIn](https://img.shields.io/badge/Connect-@sibershopstore-0077B5?style=flat-square&logo=linkedin&logoColor=white)](https://www.linkedin.com/company/sibershopstore/)
+<p align="center">
+  <!-- Teknologi -->
+  <a href="https://getbootstrap.com/">
+    <img src="https://img.shields.io/badge/Made%20with-Bootstrap-7952B3?style=flat-square&logo=bootstrap&logoColor=white" alt="Bootstrap Badge" />
+  </a>
+  <a href="https://www.emailjs.com/">
+    <img src="https://img.shields.io/badge/Powered%20by-EmailJS-F57C00?style=flat-square" alt="EmailJS Badge" />
+  </a>
+  <a href="https://fontawesome.com/">
+    <img src="https://img.shields.io/badge/Icons-Font%20Awesome-339AF0?style=flat-square&logo=fontawesome&logoColor=white" alt="Font Awesome Badge" />
+  </a>
+
+  <!-- Media Sosial -->
+  <a href="https://instagram.com/sibershopstore">
+    <img src="https://img.shields.io/badge/Follow-@sibershopstore-E4405F?style=flat-square&logo=instagram&logoColor=white" alt="Instagram Badge" />
+  </a>
+  <a href="https://www.linkedin.com/in/sibershopstore">
+    <img src="https://img.shields.io/badge/Connect-@sibershopstore-0077B5?style=flat-square&logo=linkedin&logoColor=white" alt="LinkedIn Badge" />
+  </a>
+
+  <!-- GitHub Info -->
+  <a href="https://github.com/sibershopstore">
+    <img src="https://img.shields.io/github/followers/sibershopstore?label=Follow&style=flat-square&logo=github" alt="GitHub Followers Badge" />
+  </a>
+  <a href="https://github.com/sibershopstore/website-tools">
+    <img src="https://img.shields.io/github/stars/sibershopstore/website-tools?style=flat-square&logo=github" alt="GitHub Stars Badge" />
+  </a>
+
+  <!-- Visitor Counter -->
+  <a href="https://github.com/sibershopstore/website-tools">
+    <img src="https://komarev.com/ghpvc/?username=sibershopstore&label=Visitors&color=0e75b6&style=flat-square" alt="Visitor Badge" />
+  </a>
+</p>
+
 
 ---
 
