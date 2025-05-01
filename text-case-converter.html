@@ -2,7 +2,7 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Text Case Converter - Siber Shop</title>
+  <title>WhatsApp Link Generator - Siber Shop</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Bootstrap CSS & Font Awesome -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -52,12 +52,9 @@
       width: 100%;
       max-width: 600px;
     }
-    .tool-box h4 {
-      font-size: 1.5rem;
-      margin-bottom: 1.5rem;
-    }
-    .tool-box .btn {
-      min-width: 120px;
+    .tool-box h2 {
+      margin-bottom: 1rem;
+      font-weight: bold;
     }
     /* Footer */
     footer {
@@ -74,8 +71,19 @@
       .nav-link { font-size: 0.95rem; padding: 0.4rem 0.8rem; }
       footer { font-size: 0.85rem; }
       .tool-box { padding: 20px; }
-      .tool-box h4 { font-size: 1.3rem; }
-      .tool-box .btn { width: 100%; margin-bottom: 0.5rem; }
+      .tool-box h2 { font-size: 1.4rem; }
+    }
+    /* Result box */
+    .result-box {
+      border: 1px solid #dee2e6;
+      padding: 1rem;
+      border-radius: 5px;
+      background: #f8f9fa;
+      word-break: break-all;
+    }
+    .result-box a {
+      color: #0d6efd;
+      text-decoration: none;
     }
   </style>
 </head>
@@ -87,7 +95,8 @@
       <a class="navbar-brand" href="index.html">
         <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
       </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+              data-bs-target="#navbarNav" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
@@ -104,29 +113,39 @@
   <!-- Main Content -->
   <main>
     <div class="tool-box">
-      <h4 class="text-center">Text Case Converter</h4>
-
-      <div class="mb-3">
-        <label for="inputText" class="form-label">Masukkan Teks</label>
-        <textarea id="inputText" class="form-control" rows="5" placeholder="Ketik atau tempel teks di sini..."></textarea>
+      <div class="text-center mb-4">
+        <i class="fa-brands fa-whatsapp fa-3x text-success mb-2"></i>
+        <h2>WhatsApp Link Generator</h2>
+        <p class="mb-1">Buat link WhatsApp otomatis untuk bisnismu dengan mudah.</p>
       </div>
 
-      <div class="d-flex flex-wrap justify-content-center gap-2 mb-3">
-        <button class="btn btn-primary" id="toSentence">Sentence Case</button>
-        <button class="btn btn-primary" id="toTitle">Title Case</button>
-        <button class="btn btn-primary" id="toUpper">UPPERCASE</button>
-        <button class="btn btn-primary" id="toLower">lowercase</button>
-      </div>
+      <form id="waForm">
+        <div class="mb-3">
+          <label for="phoneNumber" class="form-label">Nomor WhatsApp (tanpa +62)</label>
+          <input type="tel" id="phoneNumber" class="form-control" placeholder="contoh: 81234567890" required>
+        </div>
+        <div class="mb-3">
+          <label for="message" class="form-label">Pesan Default</label>
+          <textarea id="message" class="form-control" rows="3" placeholder="Halo, saya ingin bertanya..." required></textarea>
+        </div>
+        <div class="d-grid">
+          <button type="submit" class="btn btn-primary">Generate Link</button>
+        </div>
+      </form>
 
-      <div class="mb-3">
-        <label for="outputText" class="form-label">Hasil</label>
-        <textarea id="outputText" class="form-control" rows="5" readonly></textarea>
-      </div>
-
-      <div class="text-center">
-        <button class="btn btn-outline-secondary" id="copyBtn">
-          <i class="fa-solid fa-copy me-1"></i> Salin Teks
-        </button>
+      <div class="mt-4 d-none" id="waResult">
+        <h5>Link WhatsApp:</h5>
+        <div class="result-box mb-3">
+          <a href="#" id="waLink" target="_blank">—</a>
+        </div>
+        <div class="text-center mb-3">
+          <img id="waQr" src="" alt="QR Code" style="max-width:200px;">
+        </div>
+        <div class="text-center">
+          <button class="btn btn-success" id="copyBtn">
+            <i class="fa-solid fa-copy me-1"></i> Copy Link
+          </button>
+        </div>
       </div>
     </div>
   </main>
@@ -136,38 +155,39 @@
     &copy; 2025 Siber Shop Store – All Rights Reserved
   </footer>
 
-  <!-- Bootstrap JS & Converter Logic -->
+  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
   <script>
-    const inputText   = document.getElementById('inputText');
-    const outputText  = document.getElementById('outputText');
-    const toUpper     = document.getElementById('toUpper');
-    const toLower     = document.getElementById('toLower');
-    const toTitle     = document.getElementById('toTitle');
-    const toSentence  = document.getElementById('toSentence');
-    const copyBtn     = document.getElementById('copyBtn');
+    document.getElementById('waForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const phone = document.getElementById('phoneNumber').value.trim();
+      const msg   = encodeURIComponent(document.getElementById('message').value.trim());
+      const fullLink = \`https://wa.me/62\${phone}?text=\${msg}\`;
 
-    function sentenceCase(str){
-      return str
-        .toLowerCase()
-        .replace(/([.!?]\s*|^)([a-z])/g, (m,p,c)=> p + c.toUpperCase());
-    }
-    function titleCase(str){
-      return str
-        .toLowerCase()
-        .replace(/\b\w/g, c=> c.toUpperCase());
-    }
+      // shorten via TinyURL
+      let shortLink = fullLink;
+      try {
+        const res = await fetch(\`https://tinyurl.com/api-create.php?url=\${encodeURIComponent(fullLink)}\`);
+        if (res.ok) shortLink = await res.text();
+      } catch(_){}
 
-    toUpper.addEventListener('click', ()=> outputText.value = inputText.value.toUpperCase());
-    toLower.addEventListener('click', ()=> outputText.value = inputText.value.toLowerCase());
-    toTitle.addEventListener('click', ()=> outputText.value = titleCase(inputText.value));
-    toSentence.addEventListener('click', ()=> outputText.value = sentenceCase(inputText.value));
+      // update link & QR
+      const linkEl = document.getElementById('waLink');
+      linkEl.href = shortLink;
+      linkEl.textContent = shortLink;
+      document.getElementById('waQr').src = 
+        \`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=\${encodeURIComponent(shortLink)}\`;
 
-    copyBtn.addEventListener('click', ()=>{
-      if (!outputText.value.trim()) return alert('Tidak ada teks untuk disalin.');
-      navigator.clipboard.writeText(outputText.value)
-        .then(() => alert('Teks berhasil disalin!'))
-        .catch(() => alert('Gagal menyalin teks.'));
+      // show result
+      document.getElementById('waResult').classList.remove('d-none');
+    });
+
+    document.getElementById('copyBtn').addEventListener('click', () => {
+      const text = document.getElementById('waLink').href;
+      navigator.clipboard.writeText(text)
+        .then(() => alert('Link berhasil disalin!'))
+        .catch(() => alert('Gagal menyalin link.'));
     });
   </script>
 </body>
