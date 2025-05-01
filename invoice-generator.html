@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Invoice Generator - Siber Shop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      display: flex;
+      flex-direction: column;
+      background-color: #f8f9fa;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    main {
+      flex: 1 0 auto;
+    }
+
+    .navbar {
+      background-color: #212529;
+    }
+
+    .navbar-brand, .nav-link {
+      color: white !important;
+    }
+
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+
+    .nav-link.active, .nav-link:hover {
+      font-weight: bold;
+      color: #ffc107 !important;
+    }
+
+    footer {
+      flex-shrink: 0;
+      background-color: #212529;
+      color: white;
+      text-align: center;
+      padding: 15px 20px;
+      font-size: 0.9rem;
+    }
+
+    .btn-copy {
+      background-color: #198754;
+      border: none;
+    }
+
+    .btn-copy:hover {
+      background-color: #157347;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">
+        <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
+          <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container my-5">
+    <div class="text-center mb-4">
+      <i class="fa-solid fa-file-invoice fa-3x text-primary mb-3"></i>
+      <h2>Invoice Generator</h2>
+      <p class="lead">Buat invoice sederhana untuk bisnis kamu dalam hitungan detik.</p>
+    </div>
+
+    <div class="row justify-content-center">
+      <div class="col-md-8">
+        <form id="invoiceForm">
+          <div class="mb-3">
+            <label for="clientName" class="form-label">Nama Klien</label>
+            <input type="text" class="form-control" id="clientName" required>
+          </div>
+          <div class="mb-3">
+            <label for="serviceDesc" class="form-label">Deskripsi Layanan</label>
+            <input type="text" class="form-control" id="serviceDesc" required>
+          </div>
+          <div class="mb-3">
+            <label for="amount" class="form-label">Jumlah (Rp)</label>
+            <input type="text" class="form-control" id="amount" required oninput="formatInputCurrency(this)">
+          </div>
+          <button type="submit" class="btn btn-primary">Buat Invoice</button>
+        </form>
+
+        <div class="mt-5 d-none" id="invoiceResult">
+          <h4>Invoice:</h4>
+          <div class="border p-4 bg-white rounded shadow" id="invoiceText">
+            <p><strong>Nama Klien:</strong> <span id="resultClient"></span></p>
+            <p><strong>Deskripsi Layanan:</strong> <span id="resultService"></span></p>
+            <p><strong>Jumlah:</strong> Rp <span id="resultAmount"></span></p>
+            <p><em>Terima kasih telah menggunakan layanan kami!</em></p>
+          </div>
+
+          <!-- Tombol Copy -->
+          <div class="text-center mt-3">
+            <button class="btn btn-copy text-white" onclick="copyInvoiceText()">
+              <i class="fa-solid fa-copy me-1"></i>Copy Text Invoice
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    &copy; 2025 Siber Shop Store - All Rights Reserved
+  </footer>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Script -->
+  <script>
+    function formatInputCurrency(input) {
+      let value = input.value.replace(/\D/g, '');
+      value = new Intl.NumberFormat('id-ID').format(value);
+      input.value = value;
+    }
+
+    const invoiceForm = document.getElementById('invoiceForm');
+    const invoiceResult = document.getElementById('invoiceResult');
+    const resultClient = document.getElementById('resultClient');
+    const resultService = document.getElementById('resultService');
+    const resultAmount = document.getElementById('resultAmount');
+
+    invoiceForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const clientName = document.getElementById('clientName').value.trim();
+      const serviceDesc = document.getElementById('serviceDesc').value.trim();
+      const amountInput = document.getElementById('amount').value.replace(/\./g, '').replace(/,/g, '');
+      const amount = parseFloat(amountInput);
+
+      resultClient.textContent = clientName;
+      resultService.textContent = serviceDesc;
+      resultAmount.textContent = amount.toLocaleString('id-ID');
+      invoiceResult.classList.remove('d-none');
+    });
+
+    function copyInvoiceText() {
+      const client = resultClient.textContent;
+      const service = resultService.textContent;
+      const amount = resultAmount.textContent;
+      const textToCopy =
+`Invoice:
+Nama Klien: ${client}
+Deskripsi Layanan: ${service}
+Jumlah: Rp ${amount}
+Terima kasih telah menggunakan layanan kami!`;
+
+      navigator.clipboard.writeText(textToCopy)
+        .then(() => alert('Invoice berhasil disalin ke clipboard!'))
+        .catch(err => {
+          alert('Gagal menyalin invoice!');
+          console.error('Error:', err);
+        });
+    }
+  </script>
+</body>
+</html>
