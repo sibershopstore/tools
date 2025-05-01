@@ -16,7 +16,7 @@
   <a href="https://instagram.com/sibershopstore">
     <img src="https://img.shields.io/badge/Follow-@sibershopstore-E4405F?style=flat-square&logo=instagram&logoColor=white" alt="Instagram Badge" />
   </a>
-  <a href="https://www.linkedin.com/in/sibershopstore">
+  <a href="https://www.linkedin.com/company/sibershopstore">
     <img src="https://img.shields.io/badge/Connect-@sibershopstore-0077B5?style=flat-square&logo=linkedin&logoColor=white" alt="LinkedIn Badge" />
   </a>
 
@@ -24,12 +24,12 @@
   <a href="https://github.com/sibershopstore">
     <img src="https://img.shields.io/github/followers/sibershopstore?label=Follow&style=flat-square&logo=github" alt="GitHub Followers Badge" />
   </a>
-  <a href="https://github.com/sibershopstore/website-tools">
+  <a href="https://github.com/sibershopstore/tools">
     <img src="https://img.shields.io/github/stars/sibershopstore/website-tools?style=flat-square&logo=github" alt="GitHub Stars Badge" />
   </a>
 
   <!-- Visitor Counter -->
-  <a href="https://github.com/sibershopstore/website-tools">
+  <a href="https://github.com/sibershopstore/tools">
     <img src="https://komarev.com/ghpvc/?username=sibershopstore&label=Visitors&color=0e75b6&style=flat-square" alt="Visitor Badge" />
   </a>
 </p>
