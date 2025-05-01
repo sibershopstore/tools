@@ -23,8 +23,11 @@
     .navbar {
       background-color: #212529;
     }
+    .navbar .container {
+      padding: 0 1rem;
+    }
     .navbar-brand, .nav-link {
-      color: white !important;
+      color: #fff !important;
     }
     .navbar-brand {
       font-weight: bold;
@@ -66,7 +69,8 @@
     }
     /* Responsive */
     @media (max-width: 576px) {
-      .navbar-brand { font-size: 1.3rem; padding-left: 1rem; }
+      .navbar .container { padding: 0 0.5rem; }
+      .navbar-brand { font-size: 1.3rem; }
       .nav-link { font-size: 0.95rem; padding: 0.4rem 0.8rem; }
       footer { font-size: 0.85rem; }
       .tool-box { padding: 20px; }
