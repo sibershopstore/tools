@@ -25,17 +25,15 @@
     /* ========== NAVBAR ========== */
     .navbar {
       background-color: #212529;
-      padding: .5rem 1rem;
     }
     .navbar-brand {
-      font-size: 1.3rem;
+      font-size: 1.25rem;
       font-weight: 600;
       color: #fff !important;
     }
     .navbar-nav .nav-link {
       color: #fff !important;
       font-size: 1rem;
-      padding: .5rem 1rem;
     }
     .navbar-nav .nav-link.active,
     .navbar-nav .nav-link:hover {
@@ -56,8 +54,13 @@
       border-radius: .5rem;
       padding: 2rem;
       box-shadow: 0 0 15px rgba(0,0,0,0.1);
-      max-width: 600px;
+      max-width: 650px;
       width: 100%;
+    }
+    h5 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      text-align: center;
     }
 
     /* ========== FOOTER ========== */
@@ -71,15 +74,21 @@
 
     /* ========== RESPONSIVE ========== */
     @media (max-width: 576px) {
-      .navbar-brand { font-size: 1.2rem; }
-      .navbar-nav .nav-link { font-size: .95rem; padding: .4rem .8rem; }
-      footer { font-size: .85rem; }
+      .navbar-brand {
+        font-size: 1.1rem;
+      }
+      .navbar-nav .nav-link {
+        font-size: .95rem;
+      }
+      footer {
+        font-size: .85rem;
+      }
     }
   </style>
 </head>
 <body>
 
-  <!-- Header / Navbar -->
+  <!-- Navbar -->
   <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
       <a class="navbar-brand" href="index.html">
@@ -90,18 +99,10 @@
       </button>
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
         <ul class="navbar-nav">
-          <li class="nav-item">
-            <a class="nav-link" href="index.html">Beranda</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="about.html">Tentang Kami</a>
-          </li>
-          <li class="nav-item">
-            <a class="nav-link" href="contact.html">Kontak</a>
-          </li>
+          <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
+          <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
         </ul>
       </div>
     </div>
@@ -110,18 +111,19 @@
   <!-- Main Content -->
   <main>
     <div class="tool-box">
-      <h5 class="text-center mb-4">Text Case Converter</h5>
+      <h5 class="mb-4">Text Case Converter</h5>
 
       <div class="mb-3">
         <label for="inputText" class="form-label">Masukkan Teks</label>
         <textarea id="inputText" class="form-control" rows="5" placeholder="Ketik atau tempel teks di sini..."></textarea>
       </div>
 
-      <div class="mb-3 text-center">
-        <button class="btn btn-primary me-2" id="toSentence">Sentence Case</button>
-        <button class="btn btn-primary me-2" id="toTitle">Title Case</button>
-        <button class="btn btn-primary me-2" id="toUpper">UPPERCASE</button>
-        <button class="btn btn-primary" id="toLower">lowercase</button>
+      <!-- Tombol Responsif -->
+      <div class="row g-2 mb-3 text-center">
+        <div class="col-6 col-md-3"><button class="btn btn-primary w-100" id="toSentence">Sentence Case</button></div>
+        <div class="col-6 col-md-3"><button class="btn btn-primary w-100" id="toTitle">Title Case</button></div>
+        <div class="col-6 col-md-3"><button class="btn btn-primary w-100" id="toUpper">UPPERCASE</button></div>
+        <div class="col-6 col-md-3"><button class="btn btn-primary w-100" id="toLower">lowercase</button></div>
       </div>
 
       <div class="mb-3">
@@ -145,7 +147,7 @@
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   
-  <!-- JavaScript Logic -->
+  <!-- JavaScript -->
   <script>
     const inputText   = document.getElementById('inputText');
     const outputText  = document.getElementById('outputText');
