@@ -9,7 +9,6 @@
   <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    /* ========== GLOBAL ========== */
     html, body {
       height: 100%;
       margin: 0;
@@ -19,17 +18,16 @@
       display: flex;
       flex-direction: column;
     }
-    /* ========== NAVBAR ========== */
+
     .navbar {
       background-color: #212529;
-      padding-top: 0.75rem;
-      padding-bottom: 0.75rem;
+      padding-top: 0.5rem;
+      padding-bottom: 0.5rem;
     }
     .navbar-brand {
-      font-size: 1.3rem;
+      font-size: 1.25rem;
       font-weight: 600;
       color: #fff !important;
-      padding-left: 1rem;
     }
     .navbar-toggler {
       margin-right: 1rem;
@@ -44,7 +42,7 @@
       color: #ffc107 !important;
       font-weight: 600;
     }
-    /* ========== MAIN ========== */
+
     main {
       flex: 1;
       padding: 2rem 1rem;
@@ -52,6 +50,7 @@
       justify-content: center;
       align-items: center;
     }
+
     .tool-box {
       background: #fff;
       border-radius: 0.5rem;
@@ -60,7 +59,7 @@
       max-width: 600px;
       width: 100%;
     }
-    /* ========== FOOTER ========== */
+
     footer {
       background-color: #212529;
       color: #fff;
@@ -68,11 +67,32 @@
       padding: 1rem 0;
       font-size: 0.9rem;
     }
-    /* ========== RESPONSIVE ========== */
+
+    /* Responsive styling */
     @media (max-width: 576px) {
-      .navbar-brand { font-size: 1.2rem; }
-      .navbar-nav .nav-link { font-size: 0.95rem; padding: 0.4rem 0.8rem; }
-      footer { font-size: 0.85rem; }
+      .navbar-brand {
+        font-size: 1.1rem;
+      }
+      .navbar-nav .nav-link {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.8rem;
+      }
+      footer {
+        font-size: 0.85rem;
+      }
+      .tool-box {
+        padding: 1.5rem 1rem;
+      }
+      h4 {
+        font-size: 1.2rem;
+      }
+      .btn {
+        font-size: 0.9rem;
+        padding: 0.4rem 0.75rem;
+      }
+      textarea {
+        font-size: 0.95rem;
+      }
     }
   </style>
 </head>
@@ -80,7 +100,7 @@
 
   <!-- Header -->
   <nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container-fluid">
+    <div class="container-fluid px-3">
       <a class="navbar-brand" href="index.html">
         <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
       </a>
@@ -141,13 +161,11 @@
     const toSentence  = document.getElementById('toSentence');
     const copyBtn     = document.getElementById('copyBtn');
 
-    // Capitalize first letter of each sentence
     function sentenceCase(str){
       return str
         .toLowerCase()
         .replace(/([.!?]\s*|^)([a-z])/g, (m,p,c)=> p + c.toUpperCase());
     }
-    // Title Case (every word)
     function titleCase(str){
       return str
         .toLowerCase()
