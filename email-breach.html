@@ -1,52 +1,94 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta charset="UTF-8">
   <title>Data Breach Checker - Siber Shop</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    body { background-color: #f8f9fa; }
-    .container { max-width: 700px; margin-top: 50px; background: #fff; padding: 30px; border-radius: 10px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+    html, body { height: 100%; margin: 0; padding: 0; }
+    body { display: flex; flex-direction: column; background-color: #f8f9fa; }
+    .navbar { background-color: #212529; }
+    .navbar-brand, .nav-link { color: white !important; }
+    .navbar-brand { font-weight: bold; font-size: 1.5rem; }
+    .nav-link.active { font-weight: bold; }
+    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+    .content-box { background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 0 15px rgba(0,0,0,0.1); width: 100%; max-width: 700px; }
+    .result-box { white-space: pre-wrap; height: 200px; overflow-y: auto; resize: vertical; margin-top: 20px; }
     .logo-breach { max-height: 50px; margin: 5px; }
-    .result-box { height: 200px; overflow-y: auto; white-space: pre-wrap; margin-top: 20px; resize: vertical; }
+    footer { background-color: #212529; color: #fff; text-align: center; padding: 15px 20px; font-size: 0.9rem; }
+    .loading-spinner { display: none; justify-content: center; margin-top: 10px; }
+    #images { margin-top: 10px; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2 class="text-center mb-4">Data Breach Email Checker</h2>
-    <p class="mb-3">Periksa apakah email kamu pernah bocor dalam insiden data publik.</p>
-    <div class="mb-3">
-      <input type="email" id="emailInput" class="form-control" placeholder="contoh@example.com" required />
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved me-2"></i>Siber Shop</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
+          <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
+          <li class="nav-item"><a class="nav-link active" href="breach-checker.html">Data Breach Checker</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
+        </ul>
+      </div>
     </div>
-    <div class="d-grid mb-3">
-      <button id="checkBtn" class="btn btn-danger">Cek Kebocoran</button>
-    </div>
-    <div id="loading" class="text-center text-muted" style="display:none;">Memeriksa data...</div>
-    <textarea id="resultBox" class="form-control result-box" readonly placeholder="Hasil akan muncul di sini..."></textarea>
-    <div id="images" class="d-flex flex-wrap"></div>
-  </div>
+  </nav>
 
+  <main>
+    <div class="content-box">
+      <h2 class="text-center mb-4">Data Breach Email Checker</h2>
+      <p class="mb-3">Periksa apakah email Anda pernah muncul dalam kebocoran data publik.</p>
+      <div class="mb-3">
+        <input type="email" id="emailInput" class="form-control" placeholder="contoh@example.com" required>
+      </div>
+      <div class="d-grid mb-3">
+        <button id="checkBtn" class="btn btn-danger">Cek Kebocoran</button>
+      </div>
+      <div class="loading-spinner" id="loadingSpinner">
+        <div class="spinner-border text-danger" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
+      </div>
+      <textarea id="resultBox" class="form-control result-box" readonly placeholder="Hasil akan tampil di sini..."></textarea>
+      <div id="images" class="d-flex flex-wrap justify-content-start"></div>
+    </div>
+  </main>
+
+  <footer>
+    &copy; 2025 Siber Shop Store - All Rights Reserved
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    document.getElementById("checkBtn").addEventListener("click", async () => {
-      const email = document.getElementById("emailInput").value.trim();
-      const resultBox = document.getElementById("resultBox");
-      const imageContainer = document.getElementById("images");
-      const loading = document.getElementById("loading");
+    document.getElementById('checkBtn').addEventListener('click', async () => {
+      const email = document.getElementById('emailInput').value.trim();
+      const resultBox = document.getElementById('resultBox');
+      const imageContainer = document.getElementById('images');
+      const loadingSpinner = document.getElementById('loadingSpinner');
 
-      resultBox.value = "";
-      imageContainer.innerHTML = "";
+      resultBox.value = '';
+      imageContainer.innerHTML = '';
 
       if (!email) {
-        resultBox.value = "Silakan masukkan email.";
+        resultBox.value = 'Silakan masukkan email';
         return;
       }
 
-      loading.style.display = "block";
+      loadingSpinner.style.display = 'flex';
 
       try {
-        const response = await fetch(`/.netlify/functions/breach?check=${encodeURIComponent(email)}`);
-        const result = await response.json();
+        const response = await fetch(`https://leakcheck.net/api/public?check=${encodeURIComponent(email)}`);
+        const resultText = await response.text();
+        const firstBraceIndex = resultText.indexOf('{');
+        const jsonString = resultText.slice(firstBraceIndex);
+        const result = JSON.parse(jsonString);
 
         if (result.success && result.sources.length > 0) {
           let output = `Ditemukan ${result.sources.length} kebocoran:\n\n`;
@@ -54,24 +96,24 @@
           result.sources.forEach(source => {
             output += `• ${source.name} — ${source.date}\n`;
 
-            const img = document.createElement("img");
-            const domain = source.name.toLowerCase().replace(/\s+/g, "") + ".com";
+            const img = document.createElement('img');
+            const domain = source.name.toLowerCase().replace(/\s+/g, '') + '.com';
             img.src = `https://logo.clearbit.com/${domain}`;
             img.alt = source.name;
-            img.className = "logo-breach";
+            img.className = 'logo-breach';
             img.onerror = () => img.remove();
             imageContainer.appendChild(img);
           });
 
           resultBox.value = output;
         } else {
-          resultBox.value = "Email kamu tidak ditemukan dalam database kebocoran.";
+          resultBox.value = 'Email Anda tidak ditemukan dalam database kebocoran.';
         }
-      } catch (err) {
-        console.error(err);
-        resultBox.value = "Gagal memeriksa data. Coba lagi nanti.";
+      } catch (error) {
+        console.error('Error:', error);
+        resultBox.value = 'Gagal memeriksa kebocoran. Coba lagi nanti.';
       } finally {
-        loading.style.display = "none";
+        loadingSpinner.style.display = 'none';
       }
     });
   </script>
