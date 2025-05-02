@@ -103,15 +103,25 @@
           const data = await res.json();
 
           if (data.success) {
-            let out = `⚠️ Email "${email}" ditemukan dalam ${data.sources.length} kebocoran:\n\n`;
-            // tampilkan sources
+            // Ringkasan
+            let out = `⚠️ Email "${email}" terdeteksi dalam ${data.sources.length} kebocoran.\n\n`;
+
+            // Detail sources
             data.sources.forEach(src => {
               out += `• ${src.name} — ${src.date || 'Tanggal tidak tersedia'}\n`;
             });
-            // tampilkan fields
+            out += `\n`;
+
+            // Tampilkan semua fields dari API
             if (Array.isArray(data.fields) && data.fields.length) {
-              out += `\n🔎 Fields yang bocor: ${data.fields.join(', ')}`;
+              out += `🔎 Fields yang bocor (${data.fields.length}): ${data.fields.join(', ')}\n`;
             }
+
+            // Jika jumlah total bocoran tersedia, tampilkan
+            if (typeof data.found === 'number') {
+              out += `\n📊 Total masukan bocor: ${data.found} baris (perkiraan)`;
+            }
+
             resultBox.value = out;
           } else {
             resultBox.value = `✅ Email "${email}" tidak ditemukan dalam database kebocoran.`;
