@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <title>Cek Kebocoran Email - Siber Shop</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Bootstrap & FontAwesome CSS -->
+  <!-- Bootstrap & Font Awesome -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
@@ -67,7 +67,7 @@
     <div class="tool-box">
       <h2 class="text-center mb-4">Cek Kebocoran Email</h2>
       <input type="email" id="emailInput" class="form-control mb-3" placeholder="contoh@email.com">
-      <button id="checkBtn" class="btn btn-danger w-100 mb-2">Periksa Sekarang</button>
+      <button id="checkBtn" class="btn btn-danger w-100">Periksa Sekarang</button>
       <div id="loading"><i class="fas fa-spinner fa-spin"></i> Memeriksa data...</div>
       <textarea id="resultBox" class="result-box" readonly placeholder="Hasil akan muncul di sini..."></textarea>
     </div>
@@ -80,7 +80,53 @@
 
   <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Breach Checker Script -->
-  <script src="breach-checker.js"></script>
+  <!-- Core Script with fetch -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('checkBtn');
+      const loading = document.getElementById('loading');
+      const resultBox = document.getElementById('resultBox');
+      const emailInput = document.getElementById('emailInput');
+
+      loading.style.display = 'none';
+
+      btn.addEventListener('click', async () => {
+        const email = emailInput.value.trim();
+        resultBox.value = '';
+        if (!email) {
+          alert('Silakan masukkan email.');
+          return;
+        }
+        loading.style.display = 'block';
+        try {
+          const res = await fetch(`https://breachdirectory.p.rapidapi.com/?func=auto&term=${encodeURIComponent(email)}`, {
+            method: 'GET',
+            headers: {
+              'X-RapidAPI-Key': '086ce2e822mshcebcaa238595670p10beddjsn9d0c243c876a',
+              'X-RapidAPI-Host': 'breachdirectory.p.rapidapi.com'
+            }
+          });
+          if (!res.ok) throw new Error(res.status);
+          const data = await res.json();
+          const sites = Object.keys(data);
+          if (sites.length === 0) {
+            resultBox.value = `✅ Email "${email}" tidak ditemukan dalam database kebocoran.`;
+          } else {
+            let out = `⚠️ Email "${email}" terlibat dalam ${sites.length} kebocoran:\n\n`;
+            sites.forEach(site => {
+              const count = Array.isArray(data[site]) ? data[site].length : 0;
+              out += `• ${site} — ${count.toLocaleString()} entry\n`;
+            });
+            resultBox.value = out;
+          }
+        } catch (err) {
+          console.error(err);
+          resultBox.value = '❌ Gagal memeriksa data. Coba lagi nanti.';
+        } finally {
+          loading.style.display = 'none';
+        }
+      });
+    });
+  </script>
 </body>
 </html>
