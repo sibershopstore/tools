@@ -1,57 +1,51 @@
-document.getElementById('checkBtn').addEventListener('click', async () => {
-  const email = document.getElementById('emailInput').value.trim();
-  const resultBox = document.getElementById('resultBox');
-  const loadingSpinner = document.getElementById('loadingSpinner');
+document.getElementById("breach-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
 
-  resultBox.innerHTML = '';
-  if (!email) {
-    resultBox.innerHTML = '<p class="text-danger">Silakan masukkan email.</p>';
-    return;
-  }
-
-  loadingSpinner.style.display = 'flex';
+  const email = document.getElementById("email").value.trim();
+  const resultBox = document.getElementById("result-box");
+  resultBox.innerHTML = `<p>Mengecek data, mohon tunggu...</p>`;
 
   try {
-    const res = await fetch(`/.netlify/functions/breach?check=${encodeURIComponent(email)}`);
-    const data = await res.json();
+    const response = await fetch(`https://leakcheck.net/api/public?check=${encodeURIComponent(email)}`);
+    const text = await response.text();
 
-    if (data.success && data.sources.length > 0) {
-      const total = data.sources.length;
-      let html = `<p><strong>Total Kebocoran:</strong> ${total} kasus ditemukan.</p>`;
-      html += `<div class="breach-list">`;
+    const firstBraceIndex = text.indexOf("{");
+    const jsonString = text.slice(firstBraceIndex);
+    const data = JSON.parse(jsonString);
 
-      data.sources.forEach(source => {
-        const logoURL = `https://logo.clearbit.com/${source.name.toLowerCase().replace(/\s+/g, '')}.com`;
-        html += `
-          <div class="d-flex mb-3 p-3 border rounded align-items-start bg-light">
-            <img src="${logoURL}" onerror="this.style.display='none'" alt="logo ${source.name}" style="width: 50px; height: 50px; margin-right: 15px; border-radius: 6px;">
-            <div>
-              <strong>${source.name}</strong><br>
-              <small><strong>Tanggal Bocor:</strong> ${source.date || 'Tidak diketahui'}</small><br>
-              <small><strong>Jumlah Data:</strong> ${source.lines || 'Tidak diketahui'} baris</small><br>
-              <small><strong>Jenis Data:</strong> ${source.details || 'Tidak tersedia'}</small>
-            </div>
-          </div>`;
-      });
-
-      html += `</div>
-      <div class="alert alert-warning mt-3">
-        ⚠️ <strong>Catatan:</strong> Jika datamu muncul dalam daftar ini, segera lakukan hal berikut:
-        <ul>
-          <li>Ganti password pada akun terkait</li>
-          <li>Gunakan password yang unik dan kuat</li>
-          <li>Aktifkan verifikasi 2 langkah (2FA) jika tersedia</li>
-        </ul>
-      </div>`;
-      resultBox.innerHTML = html;
-    } else {
-      resultBox.innerHTML = `<p class="text-success">✅ Email kamu aman, tidak ditemukan dalam kebocoran data publik.</p>`;
+    if (!data.success || !data.sources || data.sources.length === 0) {
+      resultBox.innerHTML = `<p class="text-danger">Data tidak ditemukan atau email aman dari kebocoran publik.</p>`;
+      return;
     }
 
-  } catch (err) {
-    console.error(err);
-    resultBox.innerHTML = '<p class="text-danger">Terjadi kesalahan saat memuat data. Silakan coba lagi nanti.</p>';
-  } finally {
-    loadingSpinner.style.display = 'none';
+    let totalLeaks = data.sources.length;
+    let details = "";
+
+    data.sources.forEach(source => {
+      details += `
+        <div class="card mb-3">
+          <div class="card-body d-flex">
+            <img src="https://logo.clearbit.com/${source.domain}" onerror="this.src='https://via.placeholder.com/40'" alt="Logo" width="40" height="40" class="me-3">
+            <div>
+              <h5 class="mb-1">${source.domain}</h5>
+              <p class="mb-0"><strong>Tanggal Bocor:</strong> ${source.date || "Tidak diketahui"}</p>
+              <p class="mb-0"><strong>Data Bocor:</strong> ${source.data.join(", ")}</p>
+            </div>
+          </div>
+        </div>
+      `;
+    });
+
+    resultBox.innerHTML = `
+      <div class="alert alert-warning">
+        <strong>Email:</strong> ${email}<br>
+        <strong>Total Kebocoran:</strong> ${totalLeaks} sumber ditemukan.<br>
+        <strong>Catatan:</strong> Jika email kamu bocor, segera ubah password, aktifkan 2FA, dan hindari memakai password yang sama di beberapa platform.
+      </div>
+      ${details}
+    `;
+  } catch (error) {
+    console.error("Error:", error);
+    resultBox.innerHTML = `<p class="text-danger">Terjadi kesalahan saat memproses permintaan. Silakan coba lagi.</p>`;
   }
 });
