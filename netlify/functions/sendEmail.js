@@ -1,6 +1,5 @@
-// netlify/functions/sendEmail.js
-const emailjs = require('emailjs-com'); // Pastikan ini sesuai dengan EmailJS SDK
-const { EMAILJS_PUBLIC_KEY, EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID } = process.env;
+const emailjs = require('emailjs-com');
+require('dotenv').config();
 
 exports.handler = async function(event, context) {
   if (event.httpMethod !== 'POST') {
@@ -10,32 +9,31 @@ exports.handler = async function(event, context) {
     };
   }
 
-  const data = JSON.parse(event.body); // Data yang dikirimkan oleh frontend (form data)
+  const { name, email, subject, message } = JSON.parse(event.body);
 
   const emailParams = {
-    service_id: EMAILJS_SERVICE_ID, 
-    template_id: EMAILJS_TEMPLATE_ID,
-    user_id: EMAILJS_PUBLIC_KEY,
+    service_id: process.env.EMAILJS_SERVICE_ID,
+    template_id: process.env.EMAILJS_TEMPLATE_ID,
+    user_id: process.env.EMAILJS_PUBLIC_KEY,
     template_params: {
-      name: data.name,
-      email: data.email,
-      subject: data.subject,
-      message: data.message
+      name: name,
+      email: email,
+      subject: subject,
+      message: message
     }
   };
 
   try {
-    // Kirim email menggunakan EmailJS
-    const result = await emailjs.sendForm(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, emailParams);
+    const result = await emailjs.sendForm(emailParams);
     return {
       statusCode: 200,
-      body: JSON.stringify({ message: 'Email sent successfully' }),
+      body: JSON.stringify({ message: 'Pesan berhasil dikirim!' }),
     };
   } catch (error) {
-    console.error(error);
+    console.error('Error sending email:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: 'Failed to send email' }),
+      body: JSON.stringify({ message: 'Gagal mengirim pesan.' }),
     };
   }
 };
