@@ -1,52 +1,41 @@
 // netlify/functions/sendEmail.js
-const emailjs = require('@emailjs/nodejs');
+const emailjs = require('emailjs-com'); // Pastikan ini sesuai dengan EmailJS SDK
+const { EMAILJS_PUBLIC_KEY, EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID } = process.env;
 
-exports.handler = async (event) => {
-  console.log("📬 Invoked sendEmail function");
-  
+exports.handler = async function(event, context) {
   if (event.httpMethod !== 'POST') {
-    console.log("❌ Wrong HTTP method:", event.httpMethod);
-    return { statusCode: 405, body: 'Method Not Allowed' };
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ message: 'Method Not Allowed' }),
+    };
   }
 
-  let data;
-  try {
-    data = JSON.parse(event.body);
-    console.log("📥 Payload:", data);
-  } catch (err) {
-    console.error("❌ Invalid JSON:", err);
-    return { statusCode: 400, body: 'Invalid JSON' };
-  }
+  const data = JSON.parse(event.body); // Data yang dikirimkan oleh frontend (form data)
 
-  // Log env vars
-  console.log("🔑 PUBLIC_KEY:", process.env.EMAILJS_PUBLIC_KEY);
-  console.log("🔑 SERVICE_ID:", process.env.EMAILJS_SERVICE_ID);
-  console.log("🔑 TEMPLATE_ID:", process.env.EMAILJS_TEMPLATE_ID);
-
-  if (!process.env.EMAILJS_PUBLIC_KEY ||
-      !process.env.EMAILJS_SERVICE_ID ||
-      !process.env.EMAILJS_TEMPLATE_ID) {
-    console.error("❗ Missing one or more environment variables");
-    return { statusCode: 500, body: 'Env vars not set' };
-  }
-
-  emailjs.init(process.env.EMAILJS_PUBLIC_KEY);
+  const emailParams = {
+    service_id: EMAILJS_SERVICE_ID, 
+    template_id: EMAILJS_TEMPLATE_ID,
+    user_id: EMAILJS_PUBLIC_KEY,
+    template_params: {
+      name: data.name,
+      email: data.email,
+      subject: data.subject,
+      message: data.message
+    }
+  };
 
   try {
-    await emailjs.send(
-      process.env.EMAILJS_SERVICE_ID,
-      process.env.EMAILJS_TEMPLATE_ID,
-      {
-        name: data.name,
-        email: data.email,
-        subject: data.subject,
-        message: data.message
-      }
-    );
-    console.log("✅ Email sent successfully");
-    return { statusCode: 200, body: 'OK' };
+    // Kirim email menggunakan EmailJS
+    const result = await emailjs.sendForm(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, emailParams);
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: 'Email sent successfully' }),
+    };
   } catch (error) {
-    console.error("❌ EmailJS Error:", error);
-    return { statusCode: 500, body: 'Failed to send email' };
+    console.error(error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: 'Failed to send email' }),
+    };
   }
 };
