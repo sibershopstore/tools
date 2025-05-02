@@ -1,3 +1,4 @@
+// netlify/functions/breach.js
 export async function handler(event) {
   const email = event.queryStringParameters.check;
   if (!email) {
@@ -10,10 +11,15 @@ export async function handler(event) {
   try {
     const res = await fetch(`https://leakcheck.net/api/public?check=${encodeURIComponent(email)}`);
     const text = await res.text();
-
     const firstBraceIndex = text.indexOf("{");
     const jsonString = text.slice(firstBraceIndex);
     const data = JSON.parse(jsonString);
+
+    // **Tambahkan fields**: di sini kita asumsikan kolom bocor
+    data.sources = (data.sources || []).map(src => ({
+      ...src,
+      fields: src.fields || ['email','password','ip_address']  // default jika tidak ada
+    }));
 
     return {
       statusCode: 200,
