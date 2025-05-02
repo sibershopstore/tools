@@ -1,27 +1,28 @@
 const fetch = require('node-fetch');
 
 exports.handler = async (event) => {
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ error: 'Metode tidak diizinkan' }),
+    };
+  }
+
   try {
-    if (event.httpMethod !== 'POST') {
-      return {
-        statusCode: 405,
-        body: JSON.stringify({ message: 'Method Not Allowed' }),
-      };
-    }
+    const { name, email, subject, message } = JSON.parse(event.body);
 
-    const { name, email, message } = JSON.parse(event.body);
-
-    const serviceID = process.env.EMAILJS_SERVICE_ID;
-    const templateID = process.env.EMAILJS_TEMPLATE_ID;
+    const serviceId = process.env.EMAILJS_SERVICE_ID;
+    const templateId = process.env.EMAILJS_TEMPLATE_ID;
     const publicKey = process.env.EMAILJS_PUBLIC_KEY;
 
-    const emailData = {
-      service_id: serviceID,
-      template_id: templateID,
+    const emailParams = {
+      service_id: serviceId,
+      template_id: templateId,
       user_id: publicKey,
       template_params: {
         from_name: name,
         from_email: email,
+        subject: subject,
         message: message,
       },
     };
@@ -31,26 +32,28 @@ exports.handler = async (event) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(emailData),
+      body: JSON.stringify(emailParams),
     });
 
-    if (response.ok) {
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ message: 'Email terkirim' }),
-      };
-    } else {
-      const errorText = await response.text();
+    if (!response.ok) {
+      const error = await response.text();
       return {
         statusCode: response.status,
-        body: JSON.stringify({ message: 'Gagal mengirim email', error: errorText }),
+        body: JSON.stringify({ error }),
       };
     }
 
+    return {
+      statusCode: 200,
+      headers: {
+        'Access-Control-Allow-Origin': '*',
+      },
+      body: JSON.stringify({ message: 'Email berhasil dikirim' }),
+    };
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ message: 'Server error', error: error.message }),
+      body: JSON.stringify({ error: 'Terjadi kesalahan saat mengirim email' }),
     };
   }
 };
