@@ -2,99 +2,95 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Data Breach Checker - Siber Shop</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Bootstrap -->
+  <title>Data Breach Checker - Siber Shop</n><meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    body {
-      background-color: #f8f9fa;
-      padding: 40px 20px;
-    }
-    .tool-box {
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
-      max-width: 700px;
-      margin: auto;
-    }
-    .result-box {
-      white-space: pre-wrap;
-      height: 200px;
-      overflow-y: auto;
-      resize: vertical;
-    }
-    .logo-breach {
-      max-height: 50px;
-      margin-right: 10px;
-    }
+    html, body { height: 100%; margin: 0; padding: 0; }
+    body { display: flex; flex-direction: column; background-color: #f8f9fa; }
+    .navbar { background-color: #212529; }
+    .navbar-brand, .nav-link { color: white !important; }
+    .navbar-brand { font-weight: bold; font-size: 1.5rem; }
+    .nav-link.active { font-weight: bold; }
+    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
+    .content-box { background: white; border-radius: 10px; padding: 30px; box-shadow: 0 0 15px rgba(0,0,0,0.1); width: 100%; max-width: 700px; }
+    .result-box { white-space: pre-wrap; height: 200px; overflow-y: auto; resize: vertical; margin-top: 20px; }
+    .logo-breach { max-height: 50px; margin: 5px; }
+    footer { background-color: #212529; color: #fff; text-align: center; padding: 15px 20px; font-size: 0.9rem; }
   </style>
 </head>
 <body>
-  <div class="tool-box">
-    <h4 class="text-center mb-4"><i class="fas fa-shield-alt me-2"></i>Cek Kebocoran Email</h4>
-    <div class="mb-3">
-      <label for="email" class="form-label">Masukkan Email</label>
-      <input type="email" class="form-control" id="email" placeholder="contoh@example.com" required>
+  <!-- Header -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved me-2"></i>Siber Shop</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
+          <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
+          <li class="nav-item"><a class="nav-link active" href="breach-checker.html">Data Breach Checker</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
+        </ul>
+      </div>
     </div>
-    <div class="d-grid mb-3">
-      <button id="checkBtn" class="btn btn-danger">Periksa Sekarang</button>
-    </div>
-    <textarea id="result" class="form-control result-box" readonly placeholder="Hasil akan tampil di sini..."></textarea>
-    <div id="images" class="mt-4 d-flex flex-wrap justify-content-start"></div>
-  </div>
+  </nav>
 
+  <!-- Main Content -->
+  <main>
+    <div class="content-box">
+      <h2 class="text-center mb-4">Data Breach Email Checker</n><p class="mb-3">Masukkan email untuk memeriksa apakah pernah muncul dalam kebocoran data publik melalui layanan LeakCheck API.</p>
+      <div class="mb-3">
+        <input type="email" id="emailInput" class="form-control" placeholder="contoh@example.com" required>
+      </div>
+      <div class="d-grid">
+        <button id="checkBtn" class="btn btn-danger">Cek Kebocoran</button>
+      </div>
+      <textarea id="result" class="form-control result-box" readonly placeholder="Hasil akan tampil di sini..."></textarea>
+      <div id="images" class="d-flex flex-wrap"></div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    &copy; 2025 Siber Shop Store - All Rights Reserved
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     document.getElementById('checkBtn').addEventListener('click', async () => {
-      const email = document.getElementById('email').value.trim();
+      const email = document.getElementById('emailInput').value.trim();
       const resultBox = document.getElementById('result');
       const imageContainer = document.getElementById('images');
-
-      resultBox.value = 'Sedang memeriksa...';
+      resultBox.value = 'Memeriksa kebocoran...';
       imageContainer.innerHTML = '';
-
-      if (!email) {
-        resultBox.value = 'Silakan masukkan email terlebih dahulu.';
-        return;
-      }
-
+      if (!email) { resultBox.value = 'Silakan masukkan email'; return; }
       try {
-        const response = await fetch(`https://leakcheck.net/api/public?check=${encodeURIComponent(email)}`);
-        const data = await response.json();
-
-        if (!data.success) {
-          resultBox.value = data.message || 'Email tidak ditemukan dalam database kebocoran.';
-          return;
-        }
-
-        const { sources } = data;
-        if (!sources || sources.length === 0) {
-          resultBox.value = 'Email tidak ditemukan dalam kebocoran data.';
-        } else {
-          let resultText = `Email ditemukan dalam ${sources.length} kebocoran:\n\n`;
-          sources.forEach(source => {
-            resultText += `• Sumber: ${source.name || source}\n`;
-            resultText += `  Tanggal: ${source.date || '-'}\n\n`;
-
-            // Jika tersedia gambar/logo berdasarkan nama sumber
-            const logoSrc = `https://logo.clearbit.com/${source.name || source}`;
+        const res = await fetch(`https://leakcheck.net/api/public?check=${encodeURIComponent(email)}`);
+        const data = await res.json();
+        if (data && data.success && data.sources && data.sources.length) {
+          let text = `Ditemukan ${data.sources.length} sumber kebocoran:\n\n`;
+          data.sources.forEach(src => {
+            text += `• Sumber: ${src.name}\n  Tanggal: ${src.date || '-'}\n\n`;
             const img = document.createElement('img');
-            img.src = logoSrc;
-            img.alt = source.name || source;
+            img.src = `https://logo.clearbit.com/${src.name.toLowerCase().replace(/\s+/g,'')}.com`;
+            img.alt = src.name;
             img.className = 'logo-breach';
-            img.onerror = function () {
-              this.style.display = 'none';
-            };
+            img.onerror = () => img.remove();
             imageContainer.appendChild(img);
           });
-
-          resultBox.value = resultText;
+          resultBox.value = text;
+        } else {
+          resultBox.value = data.message || 'Email tidak ditemukan dalam database kebocoran.';
         }
-      } catch (error) {
-        console.error(error);
+      } catch (err) {
+        console.error(err);
         resultBox.value = 'Gagal memeriksa kebocoran. Coba lagi nanti.';
       }
     });
