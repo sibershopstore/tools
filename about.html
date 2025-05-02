@@ -1,70 +1,58 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Tentang Kami - Siber Shop</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Font Awesome -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    /* ==== GLOBAL ==== */
     html, body {
       height: 100%;
       margin: 0;
       padding: 0;
-      background-color: #f8f9fa;
     }
     body {
       display: flex;
       flex-direction: column;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f8f9fa;
     }
-
-    /* ==== NAVBAR (mirror kebijakan-privasi) ==== */
     .navbar {
       background-color: #212529;
     }
-    .navbar .container {
-      max-width: 1140px;
+    .navbar-brand, .nav-link {
+      color: white !important;
     }
     .navbar-brand {
-      color: #fff !important;
       font-weight: bold;
       font-size: 1.5rem;
-      padding-left: 0; /* align flush */
     }
-    .navbar-nav .nav-link {
-      color: #fff !important;
-      font-size: 1rem;
-      padding: 0.5rem 1rem;
-    }
-    .navbar-nav .nav-link.active,
-    .navbar-nav .nav-link:hover {
-      color: #ffc107 !important;
+    .nav-link.active {
       font-weight: bold;
     }
-
-    /* ==== CONTENT BOX ==== */
-    .content-box {
-      background-color: #fff;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.05);
-      max-width: 720px;
-      width: 100%;
-      margin: 40px auto;
-      padding: 30px;
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
     }
-
-    /* ==== FOOTER ==== */
+    .tool-box {
+      background-color: white;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 800px;
+    }
     footer {
       background-color: #212529;
       color: #fff;
       text-align: center;
       padding: 15px 20px;
       font-size: 0.9rem;
-      margin-top: auto;
     }
   </style>
 </head>
@@ -73,12 +61,8 @@
   <!-- Header -->
   <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
-      <a class="navbar-brand" href="index.html">
-        <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
-              data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false"
-              aria-label="Toggle navigation">
+      <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved me-2"></i>Siber Shop</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
@@ -94,34 +78,25 @@
 
   <!-- Main Content -->
   <main>
-    <div class="content-box">
-      <h2 class="mb-4 text-center">Tentang Siber Shop</h2>
-
-      <p><strong>Siber Shop Store</strong> adalah startup berbasis digital yang berfokus pada layanan IT, keamanan siber, forensik digital, pembuatan website, penghapusan akun, serta solusi digital marketing. Kami hadir untuk memberikan layanan yang profesional, cepat, dan terpercaya untuk mendukung kebutuhan dunia digital Anda.</p>
-
-      <h5 class="mt-4">Visi Kami</h5>
-      <p>Menjadi mitra digital terpercaya di Indonesia dalam menyediakan layanan IT dan keamanan siber yang inovatif, aman, dan berkualitas tinggi.</p>
-
-      <h5 class="mt-4">Misi Kami</h5>
+    <div class="tool-box">
+      <h4 class="text-center mb-4">Tentang Kami</h4>
+      <p>Siber Shop adalah startup digital yang bergerak di bidang layanan IT dan keamanan siber. Kami berkomitmen untuk memberikan solusi terbaik bagi individu maupun perusahaan dalam hal perlindungan data, pengelolaan akun digital, dan pengembangan teknologi.</p>
+      <h5>Visi Kami</h5>
+      <p>Menjadi penyedia layanan digital terpercaya dan terdepan di Indonesia yang mengutamakan keamanan, efisiensi, dan kenyamanan pelanggan.</p>
+      <h5>Misi Kami</h5>
       <ul>
-        <li>Menyediakan layanan IT yang terjangkau dan berkualitas tinggi.</li>
-        <li>Mengedukasi masyarakat tentang pentingnya keamanan data di dunia digital.</li>
-        <li>Memberikan solusi cepat dan efektif terhadap masalah keamanan siber.</li>
-        <li>Mendukung UMKM dan bisnis baru dalam transformasi digital mereka.</li>
+        <li>Menyediakan layanan IT dan keamanan siber yang profesional dan terjangkau.</li>
+        <li>Mengedukasi masyarakat tentang pentingnya keamanan data digital.</li>
+        <li>Berinovasi dalam pengembangan teknologi dan layanan digital.</li>
       </ul>
-
-      <h5 class="mt-4">Kenapa Memilih Kami?</h5>
+      <h5>Layanan Kami</h5>
       <ul>
-        <li><strong>Berpengalaman:</strong> Dikelola oleh tim yang ahli di bidang IT dan keamanan siber.</li>
-        <li><strong>Terpercaya:</strong> Mengutamakan privasi dan keamanan klien.</li>
-        <li><strong>Harga Kompetitif:</strong> Layanan berkualitas dengan harga yang ramah.</li>
-        <li><strong>Dukungan Penuh:</strong> Kami siap membantu setiap kebutuhan Anda, 24/7.</li>
+        <li>Pembuatan website dan blog.</li>
+        <li>Penghapusan akun digital yang tidak digunakan atau terkena hack.</li>
+        <li>Konsultasi dan pelatihan keamanan siber.</li>
+        <li>Penyediaan buku digital dan materi edukasi seputar IT.</li>
       </ul>
-
-      <h5 class="mt-4">Hubungi Kami</h5>
-      <p>Untuk informasi lebih lanjut atau konsultasi, silakan kunjungi halaman <a href="contact.html">Contact</a>.</p>
-
-      <p class="mt-4 text-muted text-end">Terakhir diperbarui: 26 April 2025</p>
+      <p>Terima kasih telah mempercayakan kebutuhan digital Anda kepada Siber Shop. Kami akan terus berkembang dan memberikan yang terbaik untuk Anda.</p>
     </div>
   </main>
 
@@ -130,7 +105,6 @@
     &copy; 2025 Siber Shop Store - All Rights Reserved
   </footer>
 
-  <!-- Bootstrap JS -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
