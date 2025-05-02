@@ -122,41 +122,33 @@
   <!-- Script untuk submit form ke Netlify Function -->
  <!-- Load EmailJS -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+<!-- Load EmailJS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script>
-(() => {
-  // Helper: balik string
-  const rev = s => s.split('').reverse().join('');
+  (function(){
+    // Inisialisasi EmailJS dengan Public Key
+    emailjs.init("ShwzX_TGYjaFSiSvO");
 
-  // Tuliskan ID EmailJS terbalik
-  const uRev = "OvsSiFajYGT_TXwzhS";    // public key
-  const sRev = "591k727_ecivres";       // service_727k195
-  const tRev = "dzn6m9l_etalpmet";      // template_l9m6nzd
+    document.addEventListener("DOMContentLoaded", function(){
+      const form = document.getElementById("contactForm");
+      form.addEventListener("submit", function(event){
+        event.preventDefault();
 
-  // Balik lagi
-  const PUBLIC_KEY = rev(uRev);
-  const SERVICE_ID = rev(sRev);
-  const TEMPLATE_ID = rev(tRev);
-
-  emailjs.init(PUBLIC_KEY);
-
-  document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('contactForm');
-    form.addEventListener('submit', e => {
-      e.preventDefault();
-      emailjs.sendForm(SERVICE_ID, TEMPLATE_ID, form)
-        .then(() => {
-          alert('Pesan berhasil dikirim!');
+        emailjs.sendForm(
+          "service_727k195",   // Service ID
+          "template_l9m6nzd",  // Template ID
+          this                 // form element
+        )
+        .then(function(){
+          alert("Pesan berhasil dikirim!");
           form.reset();
-        }, err => {
-          console.error('Error:', err);
-          alert('Gagal mengirim pesan, coba lagi nanti.');
+        }, function(error){
+          console.error("EmailJS Error:", error);
+          alert("Gagal mengirim pesan. Coba lagi nanti.");
         });
+      });
     });
-  });
-})();
+  })();
 </script>
-
-
-
 </body>
 </html>
