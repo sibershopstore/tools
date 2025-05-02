@@ -33,7 +33,7 @@
     <img src="https://komarev.com/ghpvc/?username=sibershopstore&label=Visitors&color=0e75b6&style=flat-square" alt="Visitor Badge" />
   </a>
 </p>
-
+[![Netlify Status](https://api.netlify.com/api/v1/badges/3cdfec85-6594-4c17-b3b6-efdbde8a277b/deploy-status)](https://app.netlify.com/sites/sibershoptools/deploys)
 
 ---
 
