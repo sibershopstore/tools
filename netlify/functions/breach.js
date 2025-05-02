@@ -1,55 +1,26 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const btn = document.getElementById('checkBtn');
-  const loading = document.getElementById('loading');
-  const resultBox = document.getElementById('resultBox');
-  const emailInput = document.getElementById('emailInput');
+// netlify/functions/breach.js
+const fetch = require('node-fetch');
 
-  loading.style.display = 'none';
+exports.handler = async (event) => {
+  const email = event.queryStringParameters.check;
+  if (!email) {
+    return { statusCode: 400, body: 'Parameter "check" diperlukan.' };
+  }
 
-  btn.addEventListener('click', () => {
-    const email = emailInput.value.trim();
-    resultBox.value = '';
-    loading.style.display = 'none';
-
-    if (!email) {
-      alert('Silakan masukkan email.');
-      return;
-    }
-
-    loading.style.display = 'block';
-
-    const xhr = new XMLHttpRequest();
-    xhr.open('GET', `https://breachdirectory.p.rapidapi.com/?func=auto&term=${encodeURIComponent(email)}`);
-    xhr.setRequestHeader('x-rapidapi-key', '086ce2e822mshcebcaa238595670p10beddjsn9d0c243c876a');
-    xhr.setRequestHeader('x-rapidapi-host', 'breachdirectory.p.rapidapi.com');
-    xhr.onreadystatechange = () => {
-      if (xhr.readyState !== 4) return;
-      loading.style.display = 'none';
-
-      if (xhr.status === 200) {
-        try {
-          const resp = JSON.parse(xhr.responseText);
-          const sites = Object.keys(resp);
-
-          if (sites.length === 0) {
-            resultBox.value = `✅ Email "${email}" tidak ditemukan dalam database kebocoran.`;
-          } else {
-            let out = `⚠️ Email "${email}" terlibat dalam ${sites.length} kebocoran:\n\n`;
-            sites.forEach(site => {
-              const count = Array.isArray(resp[site]) ? resp[site].length : 0;
-              out += `• ${site} — ${count.toLocaleString()} entry\n`;
-            });
-            resultBox.value = out;
-          }
-        } catch (e) {
-          console.error(e);
-          resultBox.value = '❌ Gagal memproses respons API.';
-        }
-      } else {
-        console.error('Error status', xhr.status);
-        resultBox.value = '❌ Gagal memeriksa data. Coba lagi nanti.';
-      }
+  try {
+    const res = await fetch(`https://leakcheck.net/api/public?check=${encodeURIComponent(email)}`);
+    if (!res.ok) throw new Error(`Status ${res.status}`);
+    const data = await res.json();
+    return {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
     };
-    xhr.send();
-  });
-});
+  } catch (err) {
+    console.error(err);
+    return {
+      statusCode: 502,
+      body: JSON.stringify({ success: false, error: 'Gagal mengambil data LeakCheck.' })
+    };
+  }
+};
