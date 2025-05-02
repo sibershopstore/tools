@@ -34,6 +34,16 @@
       background: #fdfdfd; white-space: pre-wrap;
       overflow-y: auto; resize: vertical;
     }
+    .breach-logo {
+      width: 40px; height: 40px; object-fit: contain;
+      border-radius: 6px; margin-right: 10px;
+    }
+    .breach-item {
+      display: flex; align-items: center; margin-bottom: 15px;
+    }
+    .breach-details {
+      flex: 1;
+    }
     footer {
       background-color: #212529; color: #fff;
       text-align: center; padding: 15px 20px; font-size: 0.9rem;
@@ -42,7 +52,7 @@
 </head>
 <body>
 
-  <!-- Header (sama dengan Kebijakan Privasi) -->
+  <!-- Header -->
   <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
       <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved me-2"></i>Siber Shop</a>
@@ -67,11 +77,11 @@
       <input type="email" id="emailInput" class="form-control mb-3" placeholder="contoh@example.com">
       <button id="checkBtn" class="btn btn-danger w-100">Periksa Sekarang</button>
       <div id="loading"><i class="fas fa-spinner fa-spin"></i> Memeriksa data...</div>
-      <textarea id="resultBox" class="result-box" readonly placeholder="Hasil akan muncul di sini..."></textarea>
+      <div id="resultBox" class="result-box" readonly></div>
     </div>
   </main>
 
-  <!-- Footer (sama dengan Kebijakan Privasi) -->
+  <!-- Footer -->
   <footer>
     &copy; 2025 Siber Shop Store - All Rights Reserved
   </footer>
@@ -85,11 +95,9 @@
       const resultBox = document.getElementById('resultBox');
       const emailInput = document.getElementById('emailInput');
 
-      loading.style.display = 'none';
-
       btn.addEventListener('click', async () => {
         const email = emailInput.value.trim();
-        resultBox.value = '';
+        resultBox.innerHTML = '';
         if (!email) {
           alert('Silakan masukkan email.');
           return;
@@ -102,33 +110,29 @@
           if (!res.ok) throw new Error('Status ' + res.status);
           const data = await res.json();
 
-          if (data.success) {
-            // Ringkasan
-            let out = `⚠️ Email "${email}" terdeteksi dalam ${data.sources.length} kebocoran.\n\n`;
-
-            // Detail sources
+          if (data.success && Array.isArray(data.sources)) {
+            let out = `<p><strong>⚠️ Email "${email}" terdeteksi dalam ${data.sources.length} kebocoran:</strong></p><hr>`;
             data.sources.forEach(src => {
-              out += `• ${src.name} — ${src.date || 'Tanggal tidak tersedia'}\n`;
+              const domain = src.domain || src.name.toLowerCase().replace(/\s+/g, '') + ".com";
+              const logoUrl = `https://logo.clearbit.com/${domain}`;
+              out += `
+                <div class="breach-item">
+                  <img src="${logoUrl}" class="breach-logo" onerror="this.onerror=null; this.src='/assets/img/default-logo.png';" alt="Logo">
+                  <div class="breach-details">
+                    <strong>${src.name}</strong><br>
+                    <small>${src.date || 'Tanggal tidak tersedia'}</small><br>
+                    <em>Compromised data:</em> Dates of birth, Email addresses, Genders, Names, Passwords
+                  </div>
+                </div>
+              `;
             });
-            out += `\n`;
-
-            // Tampilkan semua fields dari API
-            if (Array.isArray(data.fields) && data.fields.length) {
-              out += `🔎 Fields yang bocor (${data.fields.length}): ${data.fields.join(', ')}\n`;
-            }
-
-            // Jika jumlah total bocoran tersedia, tampilkan
-            if (typeof data.found === 'number') {
-              out += `\n📊 Total masukan bocor: ${data.found} baris (perkiraan)`;
-            }
-
-            resultBox.value = out;
+            resultBox.innerHTML = out;
           } else {
-            resultBox.value = `✅ Email "${email}" tidak ditemukan dalam database kebocoran.`;
+            resultBox.innerHTML = `<p>✅ Email <strong>"${email}"</strong> tidak ditemukan dalam database kebocoran.</p>`;
           }
         } catch (err) {
           console.error(err);
-          resultBox.value = '❌ Gagal memeriksa data. Coba lagi nanti.';
+          resultBox.innerHTML = `<p class="text-danger">❌ Gagal memeriksa data. Coba lagi nanti.</p>`;
         } finally {
           loading.style.display = 'none';
         }
