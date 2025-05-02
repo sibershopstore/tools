@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <title>Data Breach Checker - Siber Shop</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
@@ -84,22 +85,19 @@
       loadingSpinner.style.display = 'flex';
 
       try {
-        const response = await fetch(`https://leakcheck.net/api/public?check=${encodeURIComponent(email)}`);
-        const resultText = await response.text();
-        const firstBraceIndex = resultText.indexOf('{');
-        const jsonString = resultText.slice(firstBraceIndex);
-        const result = JSON.parse(jsonString);
+        // Panggil Netlify Function proxy
+        const res = await fetch(`/.netlify/functions/breach?check=${encodeURIComponent(email)}`);
+        const result = await res.json();
 
-        if (result.success && result.sources.length > 0) {
+        if (result.success && result.sources && result.sources.length > 0) {
           let output = `Ditemukan ${result.sources.length} kebocoran:\n\n`;
 
-          result.sources.forEach(source => {
-            output += `• ${source.name} — ${source.date}\n`;
-
+          result.sources.forEach(src => {
+            output += `• ${src.name} — ${src.date}\n`;
             const img = document.createElement('img');
-            const domain = source.name.toLowerCase().replace(/\s+/g, '') + '.com';
+            const domain = src.name.toLowerCase().replace(/\s+/g, '') + '.com';
             img.src = `https://logo.clearbit.com/${domain}`;
-            img.alt = source.name;
+            img.alt = src.name;
             img.className = 'logo-breach';
             img.onerror = () => img.remove();
             imageContainer.appendChild(img);
