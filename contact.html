@@ -116,33 +116,45 @@
  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-<script>
-  document.addEventListener('DOMContentLoaded', () => {
-    const form = document.getElementById('contactForm');
-    form.addEventListener('submit', async e => {
-      e.preventDefault();
-      const data = {
-        name: form.name.value,
-        email: form.email.value,
-        subject: form.subject.value,
-        message: form.message.value
-      };
-      const res = await fetch('/.netlify/functions/sendEmail', {
-        method: 'POST',
-        body: JSON.stringify(data)
+  <!-- Hanya Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Script untuk submit form ke Netlify Function -->
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('contactForm');
+      form.addEventListener('submit', async e => {
+        e.preventDefault();
+
+        const payload = {
+          name: form.name.value,
+          email: form.email.value,
+          subject: form.subject.value,
+          message: form.message.value
+        };
+
+        try {
+          const res = await fetch('/.netlify/functions/sendEmail', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (res.ok) {
+            alert('Pesan berhasil dikirim!');
+            form.reset();
+          } else {
+            const errText = await res.text();
+            console.error('Error response:', errText);
+            alert('Gagal mengirim pesan, coba lagi nanti.');
+          }
+        } catch (err) {
+          console.error('Fetch error:', err);
+          alert('Gagal mengirim pesan. Periksa koneksi atau coba lagi nanti.');
+        }
       });
-      if (res.ok) {
-        alert('Pesan berhasil dikirim!');
-        form.reset();
-      } else {
-        alert('Gagal mengirim pesan, coba lagi nanti.');
-        console.error(await res.text());
-      }
     });
-  });
-</script>
-
-
+  </script>
 
 
 </body>
