@@ -1,10 +1,9 @@
 {
-  "name": "sibershop-tools",
+  "name": "sibershoptools",
   "version": "1.0.0",
-  "description": "Static site for Siber Shop tools with Netlify Functions",
   "main": "index.js",
-  "scripts": {},
+  "license": "MIT",
   "dependencies": {
-    "@emailjs/nodejs": "^2.0.0"
+    "node-fetch": "^2.6.7"
   }
 }
