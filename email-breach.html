@@ -135,24 +135,45 @@
         const breachImage = document.getElementById("breachImage");
 
         if (data.success && data.found && data.sources.length > 0) {
-          const breach = data.sources[0]; // hanya ambil 1 data
-          const imageUrl = breach.image || 'https://via.placeholder.com/600x300?text=No+Image';
-          const breachDate = breach.date || 'Tidak tersedia';
-          const breachRecords = breach.records || 'Tidak tersedia';
-          const breachName = breach.name || 'Tidak diketahui';
+          const source = data.sources[0]; // Ambil hanya satu sumber
 
-          breachImage.src = imageUrl;
-          breachImage.alt = `Sumber bocor: ${breachName}`;
+          // Mapping manual untuk gambar & data
+          const breachDetails = {
+            "000webhost": {
+              name: "000webhost",
+              date: "2015-03-01",
+              records: "13.5 juta akun",
+              image: "https://haveibeenpwned.com/Content/Images/PwnedLogos/000webhost.png"
+            },
+            "nitroflare": {
+              name: "Nitroflare",
+              date: "2020-10-05",
+              records: "3 juta akun",
+              image: "https://haveibeenpwned.com/Content/Images/PwnedLogos/Nitroflare.png"
+            }
+            // Tambahkan sumber lain sesuai kebutuhan
+          };
 
-          resultText.textContent = `Email       : ${email}
-Sumber      : ${breachName}
-Tanggal     : ${breachDate}
-Jumlah Data : ${breachRecords}`;
+          const info = breachDetails[source] || {
+            name: source,
+            date: "Tidak tersedia",
+            records: "Tidak diketahui",
+            image: "https://via.placeholder.com/600x300?text=No+Image"
+          };
+
+          breachImage.src = info.image;
+          breachImage.alt = `Sumber: ${info.name}`;
+
+          resultText.value =
+`Email       : ${email}
+Sumber      : ${info.name}
+Tanggal     : ${info.date}
+Jumlah Data : ${info.records}`;
 
           resultContainer.classList.remove("d-none");
         } else {
           breachImage.src = "";
-          resultText.textContent = "Tidak ditemukan kebocoran pada email ini.";
+          resultText.value = "Tidak ditemukan kebocoran pada email ini.";
           resultContainer.classList.remove("d-none");
         }
       })
