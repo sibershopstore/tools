@@ -3,7 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const loading   = document.getElementById('loading');
   const resultDiv = document.getElementById('resultBox');
   const emailIn   = document.getElementById('emailInput');
-  const fallback  = '/assets/img/default-logo.png'; // sediakan logo default di folder ini
+  const fallback  = '/assets/img/default-logo.png'; // pastikan ada
 
   loading.style.display = 'none';
 
@@ -18,8 +18,8 @@ document.addEventListener('DOMContentLoaded', () => {
     loading.style.display = 'block';
 
     try {
-      // Panggil langsung API LeakCheck
-      const res  = await fetch(`https://leakcheck.net/api/public?check=${encodeURIComponent(email)}`);
+      // Memanggil Netlify Function breach
+      const res  = await fetch(`/.netlify/functions/breach?check=${encodeURIComponent(email)}`);
       if (!res.ok) throw new Error(`Status ${res.status}`);
       const data = await res.json();
 
@@ -27,13 +27,12 @@ document.addEventListener('DOMContentLoaded', () => {
         let html = `<p class="text-danger fw-bold">⚠️ Email "<strong>${email}</strong>" terdeteksi dalam <strong>${data.sources.length}</strong> kebocoran:</p>`;
 
         data.sources.forEach(src => {
-          // domain / name untuk clearbit
-          const domain = (src.domain || src.name.toLowerCase().replace(/\s+/g, '')) + '.com';
+          const domain  = (src.domain || src.name.toLowerCase().replace(/\s+/g, '')) + '.com';
           const logoUrl = `https://logo.clearbit.com/${domain}`;
 
           html += `
             <div class="breach-item">
-              <img src="${logoUrl}" onerror="this.onerror=null;this.src='${fallback}';" alt="${src.name} logo">
+              <img src="${logoUrl}" onerror="this.onerror=null;this.src='${fallback}';" alt="Logo ${src.name}">
               <div class="breach-details">
                 <p><strong>${src.name}</strong> — ${src.date || 'Tanggal tidak tersedia'}</p>
                 <p><em>Compromised data:</em> Dates of birth, Email addresses, Genders, Names, Passwords</p>
