@@ -116,53 +116,51 @@
       loading.style.display = 'block';
 
       try {
-        const res = await fetch(
-          `https://haveibeenpwned-v1.p.rapidapi.com/breachedaccount/${encodeURIComponent(email)}?truncateResponse=false`,
-          {
-            method: 'GET',
-            headers: {
-              'X-RapidAPI-Key': '086ce2e822mshcebcaa238595670p10beddjsn9d0c243c876a',
-              'X-RapidAPI-Host': 'haveibeenpwned-v1.p.rapidapi.com'
-            }
+        // Panggil BreachDirectory API via RapidAPI
+        const res = await fetch(`https://breachdirectory.p.rapidapi.com/?func=auto&term=${encodeURIComponent(email)}`, {
+          method: 'GET',
+          headers: {
+            'X-RapidAPI-Key': '086ce2e822mshcebcaa238595670p10beddjsn9d0c243c876a',
+            'X-RapidAPI-Host': 'breachdirectory.p.rapidapi.com'
           }
-        );
-
-        if (res.status === 404) {
-          loading.style.display = 'none';
-          resultArea.style.display = 'block';
-          resultBox.value = `✅ Email "${email}" tidak ditemukan dalam database kebocoran.`;
-          return;
-        }
+        });
 
         if (!res.ok) throw new Error('Status ' + res.status);
 
         const data = await res.json();
-        let summary = `⚠️ Email "${email}" terlibat dalam ${data.length} kebocoran:\n\n`;
+        // data adalah objek dengan key nama situs, value array password hashes
 
-        breachList.innerHTML = '';
-        data.forEach(breach => {
-          const domain = breach.Domain || breach.Name.replace(/\s+/g,'').toLowerCase();
-          const logoUrl = `https://logo.clearbit.com/${domain}`;
+        const keys = Object.keys(data);
+        if (keys.length === 0) {
+          // jika kosong
+          resultBox.value = `✅ Email "${email}" tidak ditemukan dalam database kebocoran.`;
+        } else {
+          let summary = `⚠️ Email "${email}" terlibat dalam ${keys.length} kebocoran:\n\n`;
 
-          const item = document.createElement('div');
-          item.className = 'breach-item';
-          item.innerHTML = `
-            <img src="${logoUrl}" alt="${breach.Name}" onerror="this.remove()">
-            <div>
-              <h5>${breach.Name}</h5>
-              <p class="mb-1"><strong>Tanggal:</strong> ${new Date(breach.BreachDate).toLocaleDateString()}</p>
-              <p class="mb-1"><strong>Data Bocor:</strong> ${breach.DataClasses.join(', ')}</p>
-              <p class="mb-0"><strong>Keterangan:</strong> ${breach.PwnCount.toLocaleString()} akun</p>
-            </div>
-          `;
-          breachList.appendChild(item);
+          keys.forEach(site => {
+            const count = Array.isArray(data[site]) ? data[site].length : 0;
+            // logo dari Clearbit
+            const logoUrl = `https://logo.clearbit.com/${site}`;
 
-          summary += `• ${breach.Name} — ${new Date(breach.BreachDate).toLocaleDateString()} — Data: ${breach.DataClasses.join(', ')} — ${breach.PwnCount.toLocaleString()} akun\n`;
-        });
+            // tampilkan di list
+            const item = document.createElement('div');
+            item.className = 'breach-item';
+            item.innerHTML = `
+              <img src="${logoUrl}" alt="${site}" onerror="this.remove()">
+              <div>
+                <h5>${site}</h5>
+                <p class="mb-1"><strong>Jumlah Entris:</strong> ${count.toLocaleString()}</p>
+              </div>
+            `;
+            breachList.appendChild(item);
 
-        resultBox.value = summary;
+            summary += `• ${site} — ${count.toLocaleString()} entry\n`;
+          });
+
+          resultBox.value = summary;
+        }
+
         resultArea.style.display = 'block';
-
       } catch (err) {
         console.error(err);
         alert('Gagal memeriksa data. Coba lagi nanti.');
