@@ -2,121 +2,112 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
+  <title>Data Breach Checker - Siber Shop</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Cek Data Breach - Siber Shop Tools</title>
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
     body {
-      font-family: 'Segoe UI', sans-serif;
+      display: flex;
+      flex-direction: column;
+      background-color: #f8f9fa;
     }
-    .result-box {
-      min-height: 250px;
-      background: #f8f9fa;
+    .navbar {
+      background-color: #212529;
     }
-    .logo-breach {
-      height: 40px;
-      width: auto;
-      border-radius: 4px;
+    .navbar-brand, .nav-link {
+      color: white !important;
     }
-    .footer {
-      background: #222;
-      color: white;
-      padding: 20px;
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+    .nav-link.active {
+      font-weight: bold;
+    }
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .tool-box {
+      background-color: white;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 800px;
+    }
+    footer {
+      background-color: #212529;
+      color: #fff;
       text-align: center;
+      padding: 15px 20px;
+      font-size: 0.9rem;
     }
-    .header {
-      background: #0d6efd;
-      padding: 20px;
-      color: white;
-      text-align: center;
+    #loadingSpinner {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      margin-top: 20px;
     }
   </style>
 </head>
 <body>
 
   <!-- Header -->
-  <div class="header">
-    <h1>Siber Shop Tools</h1>
-    <p>Cek Apakah Email Kamu Pernah Bocor</p>
-  </div>
-
-  <!-- Konten Utama -->
-  <div class="container my-5">
-    <div class="mb-4">
-      <label for="emailInput" class="form-label">Masukkan Email:</label>
-      <input type="email" id="emailInput" class="form-control" placeholder="contoh@email.com">
-    </div>
-    <button id="checkBtn" class="btn btn-primary mb-3">Cek Sekarang</button>
-    <div id="loadingSpinner" class="mb-3" style="display: none;">
-      <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved me-2"></i>Siber Shop</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link active" href="index.html">Beranda</a></li>
+          <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
+        </ul>
       </div>
     </div>
-    <div id="resultBox" class="result-box p-3 border rounded">
-      <em>Hasil akan muncul di sini setelah pengecekan...</em>
+  </nav>
+
+  <!-- Konten -->
+  <main>
+    <div class="tool-box">
+      <h2 class="mb-4 text-center">Pengecekan Email Bocor</h2>
+
+      <div class="mb-3">
+        <label for="emailInput" class="form-label">Masukkan Email:</label>
+        <input type="email" id="emailInput" class="form-control" placeholder="contoh@email.com" required>
+      </div>
+      <button id="checkBtn" class="btn btn-primary">Cek Sekarang</button>
+
+      <div id="loadingSpinner">
+        <div class="spinner-border text-primary" role="status"></div>
+      </div>
+
+      <div id="resultBox" class="mt-4"></div>
     </div>
-  </div>
+  </main>
 
   <!-- Footer -->
-  <div class="footer">
-    <p>&copy; 2025 Siber Shop Store - Jasa Layanan Digital Terpercaya Nomor 1</p>
-  </div>
+  <footer>
+    &copy; 2025 Siber Shop Store - All Rights Reserved
+  </footer>
 
   <!-- Script -->
-  <script>
-    document.getElementById('checkBtn').addEventListener('click', async () => {
-      const email = document.getElementById('emailInput').value.trim();
-      const resultBox = document.getElementById('resultBox');
-      const loadingSpinner = document.getElementById('loadingSpinner');
-
-      resultBox.innerHTML = '';
-      if (!email) {
-        resultBox.innerHTML = '<p class="text-danger">Silakan masukkan email.</p>';
-        return;
-      }
-
-      loadingSpinner.style.display = 'flex';
-
-      try {
-        const res = await fetch(`/.netlify/functions/breach?check=${encodeURIComponent(email)}`);
-        const data = await res.json();
-
-        if (data.success && data.sources.length > 0) {
-          let totalBreaches = data.sources.length;
-          let outputHTML = `<p><strong>Total Kebocoran:</strong> ${totalBreaches}</p><ul class="list-unstyled">`;
-
-          data.sources.forEach(source => {
-            const logoURL = `https://logo.clearbit.com/${source.name.toLowerCase().replace(/\s+/g, '')}.com`;
-
-            outputHTML += `
-              <li class="d-flex align-items-start mb-3">
-                <img src="${logoURL}" alt="${source.name}" class="logo-breach me-3" onerror="this.style.display='none';">
-                <div>
-                  <strong>${source.name}</strong> <br>
-                  <small><strong>Tanggal:</strong> ${source.date || 'Tidak diketahui'}</small><br>
-                  <small><strong>Jumlah Baris:</strong> ${source.lines || '?'} baris</small><br>
-                  <small><strong>Jenis Data Bocor:</strong> ${source.details || 'Tidak tersedia'}</small>
-                </div>
-              </li>
-            `;
-          });
-
-          outputHTML += `</ul>
-            <div class="alert alert-warning mt-4">
-              ⚠️ <strong>Catatan:</strong> Jika email kamu muncul di atas, segera ubah password kamu, hindari penggunaan ulang password, dan aktifkan verifikasi 2 langkah (2FA) untuk keamanan tambahan.
-            </div>`;
-          resultBox.innerHTML = outputHTML;
-        } else {
-          resultBox.innerHTML = '<p class="text-success">✅ Email kamu tidak ditemukan dalam database kebocoran.</p>';
-        }
-      } catch (err) {
-        console.error(err);
-        resultBox.innerHTML = '<p class="text-danger">Terjadi kesalahan saat mengambil data. Silakan coba lagi nanti.</p>';
-      } finally {
-        loadingSpinner.style.display = 'none';
-      }
-    });
-  </script>
-
+  <script src="breach.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
