@@ -125,30 +125,34 @@
 <!-- Load EmailJS SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script>
-  (function(){
-    // Inisialisasi EmailJS dengan Public Key
-    emailjs.init("ShwzX_TGYjaFSiSvO");
+  document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("contactForm");
+    form.addEventListener("submit", function (e) {
+      e.preventDefault();
 
-    document.addEventListener("DOMContentLoaded", function(){
-      const form = document.getElementById("contactForm");
-      form.addEventListener("submit", function(event){
-        event.preventDefault();
+      const data = new FormData(form);
 
-        emailjs.sendForm(
-          "service_727k195",   // Service ID
-          "template_l9m6nzd",  // Template ID
-          this                 // form element
-        )
-        .then(function(){
-          alert("Pesan berhasil dikirim!");
-          form.reset();
-        }, function(error){
-          console.error("EmailJS Error:", error);
-          alert("Gagal mengirim pesan. Coba lagi nanti.");
-        });
+      fetch('/.netlify/functions/sendEmail', {
+        method: 'POST',
+        body: JSON.stringify({
+          name: data.get('name'),
+          email: data.get('email'),
+          subject: data.get('subject'),
+          message: data.get('message')
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        alert('Pesan berhasil dikirim!');
+        form.reset();
+      })
+      .catch(error => {
+        alert('Gagal mengirim pesan. Coba lagi nanti.');
+        console.error(error);
       });
     });
-  })();
+  });
 </script>
+
 </body>
 </html>
