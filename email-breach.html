@@ -2,87 +2,31 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Coming Soon - Siber Shop</title>
+  <title>Data Breach Email Checker - Siber Shop</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      flex-direction: column;
-      background-color: #f8f9fa;
-    }
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    }
-    .navbar {
-      background-color: #212529;
-    }
-    .navbar-brand, .nav-link {
-      color: white !important;
-    }
-    .navbar-brand {
-      font-weight: bold;
-      font-size: 1.5rem;
-    }
-    .nav-link.active, .nav-link:hover {
-      font-weight: bold;
-    }
-    main {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 20px;
-    }
-    .coming-soon-container {
-      background-color: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
-      text-align: center;
-      max-width: 600px;
-      width: 100%;
-      color: #343a40;
-    }
-    .rocket {
-      font-size: 6rem;
-      animation: rocketMove 2.5s infinite alternate ease-in-out;
-      margin-bottom: 20px;
-      color: #ff5722;
-      text-shadow:
-        0 0 10px #ff5722,
-        0 0 20px #ff5722,
-        0 0 30px #ff5722,
-        0 0 40px #ff5722;
-    }
-    @keyframes rocketMove {
-      0% { transform: translateY(0) rotate(0deg); }
-      100% { transform: translateY(-20px) rotate(15deg); }
-    }
-    footer {
-      background-color: #212529;
-      color: #fff;
-      text-align: center;
-      padding: 15px 20px;
-      font-size: 0.9rem;
-    }
+    html, body { height: 100%; margin: 0; padding: 0; }
+    body { display: flex; flex-direction: column; background-color: #f8f9fa; }
+    .navbar { background-color: #212529; }
+    .navbar-brand, .nav-link { color: white !important; }
+    .navbar-brand { font-weight: bold; font-size: 1.5rem; }
+    .nav-link.active { font-weight: bold; }
+    main { flex: 1; padding: 40px 20px; display: flex; align-items: center; justify-content: center; }
+    .tool-box { background: white; border-radius: 10px; padding: 30px; box-shadow: 0 0 15px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
+    .result-box { margin-top: 20px; }
+    footer { background-color: #212529; color: #fff; text-align: center; padding: 15px 20px; font-size: 0.9rem; }
   </style>
 </head>
 <body>
-
   <!-- Header -->
   <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
-      <a class="navbar-brand" href="index.html">
-        <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved me-2"></i>Siber Shop</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
@@ -90,6 +34,7 @@
           <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
           <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
           <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
+          <li class="nav-item"><a class="nav-link active" href="breach-checker.html">Data Breach Checker</a></li>
           <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
         </ul>
       </div>
@@ -98,10 +43,19 @@
 
   <!-- Main Content -->
   <main>
-    <div class="coming-soon-container">
-      <i class="fa-solid fa-rocket rocket"></i>
-      <h2>Segera Hadir!</h2>
-      <p class="lead">Tools Email Breach Checker sedang dalam pengembangan. Nantikan fitur terbaru dari Siber Shop.</p>
+    <div class="tool-box">
+      <h4 class="text-center mb-4">Data Breach Email Checker</h4>
+      <p>Periksa apakah email Anda pernah muncul di daftar kebocoran publik menggunakan API gratis PSBDMP.</p>
+      <form id="breachForm">
+        <div class="mb-3">
+          <label for="emailInput" class="form-label">Email Kamu</label>
+          <input type="email" class="form-control" id="emailInput" name="email" placeholder="email@domain.com" required>
+        </div>
+        <div class="d-grid">
+          <button type="submit" class="btn btn-danger">Cek Kebocoran</button>
+        </div>
+      </form>
+      <div class="result-box" id="resultBox"></div>
     </div>
   </main>
 
@@ -110,6 +64,40 @@
     &copy; 2025 Siber Shop Store - All Rights Reserved
   </footer>
 
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.getElementById('breachForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const email = document.getElementById('emailInput').value;
+      const resultBox = document.getElementById('resultBox');
+      resultBox.innerHTML = '<p class="text-muted">Memeriksa...</p>';
+      try {
+        // Panggilan ke Netlify Function untuk proxy PSBDMP API agar tidak terkena CORS
+        const res = await fetch('/.netlify/functions/breach', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email })
+        });
+        const data = await res.json();
+        console.log('BREACH DATA', data);
+        if (res.ok && data.data && data.data.length > 0) {
+          resultBox.innerHTML = '<h5 class="text-danger">Kebocoran Ditemukan:</h5>' + data.data.map(item =>
+            `<div class="border p-2 mb-2">
+               <strong>${item.Leak}</strong><br>
+               Catatan: ${item.Details || '-'}<br>
+             </div>`
+          ).join('');
+        } else if (res.ok) {
+          resultBox.innerHTML = '<p class="text-success">Email Anda tidak ditemukan dalam database kebocoran.</p>';
+        } else {
+          resultBox.innerHTML = '<p class="text-warning">Gagal memeriksa kebocoran. Coba lagi nanti.</p>';
+        }
+      } catch (err) {
+        resultBox.innerHTML = '<p class="text-danger">Terjadi kesalahan. Coba lagi nanti.</p>';
+        console.error(err);
+      }
+    });
+  </script>
 </body>
 </html>
