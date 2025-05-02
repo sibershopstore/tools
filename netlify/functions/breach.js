@@ -1,53 +1,55 @@
-document.getElementById('checkBtn').addEventListener('click', () => {
-  const email = document.getElementById('emailInput').value.trim();
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('checkBtn');
   const loading = document.getElementById('loading');
   const resultBox = document.getElementById('resultBox');
+  const emailInput = document.getElementById('emailInput');
 
-  resultBox.value = '';
   loading.style.display = 'none';
 
-  if (!email) {
-    alert('Silakan masukkan email.');
-    return;
-  }
+  btn.addEventListener('click', () => {
+    const email = emailInput.value.trim();
+    resultBox.value = '';
+    loading.style.display = 'none';
 
-  loading.style.display = 'block';
+    if (!email) {
+      alert('Silakan masukkan email.');
+      return;
+    }
 
-  const xhr = new XMLHttpRequest();
-  xhr.withCredentials = false;
+    loading.style.display = 'block';
 
-  xhr.onreadystatechange = function () {
-    if (xhr.readyState === 4) {
+    const xhr = new XMLHttpRequest();
+    xhr.open('GET', `https://breachdirectory.p.rapidapi.com/?func=auto&term=${encodeURIComponent(email)}`);
+    xhr.setRequestHeader('x-rapidapi-key', '086ce2e822mshcebcaa238595670p10beddjsn9d0c243c876a');
+    xhr.setRequestHeader('x-rapidapi-host', 'breachdirectory.p.rapidapi.com');
+    xhr.onreadystatechange = () => {
+      if (xhr.readyState !== 4) return;
       loading.style.display = 'none';
+
       if (xhr.status === 200) {
         try {
-          const response = JSON.parse(xhr.responseText);
-          const sites = Object.keys(response);
+          const resp = JSON.parse(xhr.responseText);
+          const sites = Object.keys(resp);
 
           if (sites.length === 0) {
             resultBox.value = `✅ Email "${email}" tidak ditemukan dalam database kebocoran.`;
           } else {
-            let output = `⚠️ Email "${email}" ditemukan dalam ${sites.length} kebocoran:\n\n`;
+            let out = `⚠️ Email "${email}" terlibat dalam ${sites.length} kebocoran:\n\n`;
             sites.forEach(site => {
-              const count = Array.isArray(response[site]) ? response[site].length : 0;
-              output += `• ${site} — ${count.toLocaleString()} data\n`;
+              const count = Array.isArray(resp[site]) ? resp[site].length : 0;
+              out += `• ${site} — ${count.toLocaleString()} entry\n`;
             });
-            resultBox.value = output;
+            resultBox.value = out;
           }
         } catch (e) {
           console.error(e);
-          resultBox.value = '❌ Gagal memproses data respons.';
+          resultBox.value = '❌ Gagal memproses respons API.';
         }
       } else {
-        console.error('Status:', xhr.status);
+        console.error('Error status', xhr.status);
         resultBox.value = '❌ Gagal memeriksa data. Coba lagi nanti.';
       }
-    }
-  };
-
-  const url = `https://breachdirectory.p.rapidapi.com/?func=auto&term=${encodeURIComponent(email)}`;
-  xhr.open('GET', url);
-  xhr.setRequestHeader('x-rapidapi-key', '086ce2e822mshcebcaa238595670p10beddjsn9d0c243c876a');
-  xhr.setRequestHeader('x-rapidapi-host', 'breachdirectory.p.rapidapi.com');
-  xhr.send();
+    };
+    xhr.send();
+  });
 });
