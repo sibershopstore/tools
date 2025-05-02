@@ -1,57 +1,57 @@
 document.addEventListener('DOMContentLoaded', () => {
-  const btn = document.getElementById('checkBtn');
-  const loading = document.getElementById('loading');
-  const resultBox = document.getElementById('resultBox');
-  const emailInput = document.getElementById('emailInput');
+  const btn       = document.getElementById('checkBtn');
+  const loading   = document.getElementById('loading');
+  const resultDiv = document.getElementById('resultBox');
+  const emailIn   = document.getElementById('emailInput');
+  const fallback  = '/assets/img/default-logo.png'; // sediakan logo default di folder ini
 
   loading.style.display = 'none';
 
   btn.addEventListener('click', async () => {
-    const email = emailInput.value.trim();
-    resultBox.value = '';
+    const email = emailIn.value.trim();
+    resultDiv.innerHTML = '';
     if (!email) {
-      alert('Silakan masukkan email.');
-      return;
+      emailIn.focus();
+      return alert('Silakan masukkan email.');
     }
 
     loading.style.display = 'block';
 
     try {
-      const res = await fetch(`/.netlify/functions/breach?check=${encodeURIComponent(email)}`);
-      if (!res.ok) throw new Error('Status ' + res.status);
+      // Panggil langsung API LeakCheck
+      const res  = await fetch(`https://leakcheck.net/api/public?check=${encodeURIComponent(email)}`);
+      if (!res.ok) throw new Error(`Status ${res.status}`);
       const data = await res.json();
 
-      if (data.success) {
-        const container = document.createElement('div');
-        container.innerHTML = `<p class="mb-3 text-danger fw-bold">⚠️ Email "<strong>${email}</strong>" terdeteksi dalam <strong>${data.sources.length}</strong> kebocoran:</p>`;
+      if (data.success && Array.isArray(data.sources) && data.sources.length) {
+        let html = `<p class="text-danger fw-bold">⚠️ Email "<strong>${email}</strong>" terdeteksi dalam <strong>${data.sources.length}</strong> kebocoran:</p>`;
 
         data.sources.forEach(src => {
-          const logoUrl = `https://logo.clearbit.com/${src.domain}`;
-          const fallbackLogo = "images/default-breach-logo.png";
+          // domain / name untuk clearbit
+          const domain = (src.domain || src.name.toLowerCase().replace(/\s+/g, '')) + '.com';
+          const logoUrl = `https://logo.clearbit.com/${domain}`;
 
-          const card = document.createElement('div');
-          card.className = 'card mb-3';
-          card.innerHTML = `
-            <div class="card-body d-flex">
-              <img src="${logoUrl}" onerror="this.src='${fallbackLogo}'" class="me-3 rounded" alt="Logo ${src.name}" style="width:48px; height:48px; object-fit:contain;">
-              <div>
-                <h5 class="card-title mb-1">${src.name}</h5>
-                <p class="card-text mb-1"><strong>Tanggal:</strong> ${src.date || 'Tidak tersedia'}</p>
-                <p class="card-text mb-1"><strong>Compromised data:</strong> Email addresses, Passwords, Names, Genders, Dates of birth, IP Address, Alamat, Negara</p>
-                <p class="card-text"><strong>Total data bocor:</strong> ${src.found ? src.found.toLocaleString('id-ID') + ' baris' : 'Tidak diketahui'}</p>
+          html += `
+            <div class="breach-item">
+              <img src="${logoUrl}" onerror="this.onerror=null;this.src='${fallback}';" alt="${src.name} logo">
+              <div class="breach-details">
+                <p><strong>${src.name}</strong> — ${src.date || 'Tanggal tidak tersedia'}</p>
+                <p><em>Compromised data:</em> Dates of birth, Email addresses, Genders, Names, Passwords</p>
+                ${typeof data.found === 'number'
+                  ? `<p><em>Total masukan bocor:</em> ${data.found.toLocaleString('id-ID')} baris (perkiraan)</p>`
+                  : ''
+                }
               </div>
-            </div>
-          `;
-          container.appendChild(card);
+            </div>`;
         });
 
-        resultBox.replaceWith(container);
+        resultDiv.innerHTML = html;
       } else {
-        resultBox.value = `✅ Email "${email}" tidak ditemukan dalam database kebocoran.`;
+        resultDiv.innerHTML = `<p class="text-success">✅ Email "<strong>${email}</strong>" tidak ditemukan dalam database kebocoran.</p>`;
       }
     } catch (err) {
       console.error(err);
-      resultBox.value = '❌ Gagal memeriksa data. Coba lagi nanti.';
+      resultDiv.innerHTML = `<p class="text-danger">❌ Gagal memeriksa data. Coba lagi nanti.</p>`;
     } finally {
       loading.style.display = 'none';
     }
