@@ -2,8 +2,11 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Data Breach Checker - Siber Shop</title><meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Data Breach Checker - Siber Shop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Bootstrap CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
     html, body { height: 100%; margin: 0; padding: 0; }
@@ -16,10 +19,10 @@
     .content-box { background-color: white; border-radius: 10px; padding: 30px; box-shadow: 0 0 15px rgba(0,0,0,0.1); width: 100%; max-width: 700px; }
     .result-container { display: flex; gap: 20px; margin-top: 20px; }
     .result-box { flex: 1; white-space: pre-wrap; height: 250px; overflow-y: auto; resize: vertical; }
-    .image-box { flex: 0 0 100px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+    .image-box { flex: 0 0 120px; display: flex; flex-direction: column; align-items: center; gap: 10px; overflow-y: auto; }
     .logo-breach { max-width: 80px; border: 1px solid #ddd; border-radius: 4px; }
-    footer { background-color: #212529; color: #fff; text-align: center; padding: 15px 20px; font-size: 0.9rem; }
     .loading-spinner { display: none; justify-content: center; margin-top: 10px; }
+    footer { background-color: #212529; color: #fff; text-align: center; padding: 15px 20px; font-size: 0.9rem; }
     @media (max-width: 576px) {
       .result-container { flex-direction: column; }
       .image-box { flex-direction: row; flex-wrap: wrap; justify-content: center; }
@@ -27,10 +30,11 @@
   </style>
 </head>
 <body>
+  <!-- Header -->
   <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
       <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved me-2"></i>Siber Shop</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
@@ -45,6 +49,7 @@
     </div>
   </nav>
 
+  <!-- Main Content -->
   <main>
     <div class="content-box">
       <h2 class="text-center mb-4">Data Breach Email Checker</h2>
@@ -52,13 +57,14 @@
       <div class="mb-3">
         <input type="email" id="emailInput" class="form-control" placeholder="contoh@example.com">
       </div>
-      <div class="d-grid">
+      <div class="d-grid mb-3">
         <button id="checkBtn" class="btn btn-danger">Cek Kebocoran</button>
       </div>
       <div class="loading-spinner" id="loadingSpinner">
-        <div class="spinner-border text-danger" role="status"><span class="visually-hidden">Loading...</span></div>
+        <div class="spinner-border text-danger" role="status">
+          <span class="visually-hidden">Loading...</span>
+        </div>
       </div>
-
       <div class="result-container">
         <textarea id="resultBox" class="form-control result-box" readonly placeholder="Hasil akan tampil di sini..."></textarea>
         <div class="image-box" id="images"></div>
@@ -66,10 +72,12 @@
     </div>
   </main>
 
+  <!-- Footer -->
   <footer>
     &copy; 2025 Siber Shop Store - All Rights Reserved
   </footer>
 
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     document.getElementById('checkBtn').addEventListener('click', async () => {
@@ -91,12 +99,14 @@
       try {
         const res = await fetch(`/.netlify/functions/breach?check=${encodeURIComponent(email)}`);
         const data = await res.json();
-        
-        if (data.success && data.sources.length > 0) {
-          let output = `Ditemukan ${data.sources.length} kebocoran pada email ini:\n`;
+
+        if (data.success && data.sources && data.sources.length > 0) {
+          let output = `Ditemukan ${data.found || data.sources.length} kebocoran pada email ini:`;
+          output += '\n-----------------------------------\n';
 
           data.sources.forEach(src => {
-            output += `\n• Sumber: ${src.name}\n  Tanggal: ${src.date}\n  Kolom bocor: ${src.fields.join(', ')}\n`;
+            const fields = Array.isArray(src.fields) ? src.fields : [];
+            output += `\nSumber: ${src.name}\nTanggal: ${src.date}\nKolom bocor: ${fields.length ? fields.join(', ') : '-'}\n`;
 
             const img = document.createElement('img');
             const domain = src.name.toLowerCase().replace(/\s+/g, '') + '.com';
@@ -109,10 +119,10 @@
 
           resultBox.value = output;
         } else {
-          resultBox.value = 'Email Anda tidak ditemukan dalam database kebocoran.';
+          resultBox.value = data.message || 'Email Anda tidak ditemukan dalam database kebocoran.';
         }
       } catch (err) {
-        console.error(err);
+        console.error('Error:', err);
         resultBox.value = 'Gagal memeriksa kebocoran. Coba lagi nanti.';
       } finally {
         loadingSpinner.style.display = 'none';
