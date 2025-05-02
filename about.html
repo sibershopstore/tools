@@ -8,44 +8,32 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <!-- Font Awesome -->
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
-<style>
-    html, body {
-      height: 100%;
-      margin: 0;
-      padding: 0;
-    }
+  <style>
     body {
-      display: flex;
-      flex-direction: column;
       background-color: #f8f9fa;
     }
-    .navbar {
+    header {
       background-color: #212529;
+      color: white;
     }
-    .navbar-brand, .nav-link {
+    header a {
+      text-decoration: none;
+    }
+    .nav-link {
       color: white !important;
     }
-    .navbar-brand {
+    .nav-link.active,
+    .nav-link.text-warning {
       font-weight: bold;
-      font-size: 1.5rem;
+      color: #ffc107 !important;
     }
-    .nav-link.active {
-      font-weight: bold;
-    }
-    main {
-      flex: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 20px;
-    }
-    .tool-box {
+    .content-box {
       background-color: white;
       border-radius: 10px;
       padding: 30px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-      width: 100%;
-      max-width: 800px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.05);
+      margin-top: 40px;
+      margin-bottom: 40px;
     }
     footer {
       background-color: #212529;
@@ -59,53 +47,52 @@
 <body>
 
   <!-- Header -->
-  <header>
-    <nav class="navbar navbar-expand-lg navbar-dark container">
-      <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved"></i> Siber Shop</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarNav">
-        <ul class="navbar-nav ms-auto">
-          <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
-          <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
-          <li class="nav-item"><a class="nav-link active" href="about.html">Tentang Kami</a></li>
-          <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
-        </ul>
-      </div>
-    </nav>
+  <header class="py-3 mb-4">
+    <div class="container d-flex flex-wrap justify-content-between align-items-center">
+      <a href="index.html" class="d-flex align-items-center text-white fs-4 fw-bold">
+        <i class="fa-solid fa-shield-halved me-2"></i> Siber Shop
+      </a>
+      <ul class="nav">
+        <li class="nav-item"><a href="index.html" class="nav-link px-2 text-white">Beranda</a></li>
+        <li class="nav-item"><a href="kebijakan-privasi.html" class="nav-link px-2 text-white">Kebijakan Privasi</a></li>
+        <li class="nav-item"><a href="about.html" class="nav-link px-2 text-warning">Tentang Kami</a></li>
+        <li class="nav-item"><a href="contact.html" class="nav-link px-2 text-white">Kontak</a></li>
+      </ul>
+    </div>
   </header>
 
   <!-- Main Content -->
   <main>
-    <div class="content-box">
-      <h2 class="mb-4 text-center">Tentang Siber Shop</h2>
+    <div class="container">
+      <div class="content-box">
+        <h2 class="mb-4 text-center">Tentang Siber Shop</h2>
 
-      <p><strong>Siber Shop Store</strong> adalah startup berbasis digital yang berfokus pada layanan IT, keamanan siber, forensik digital, pembuatan website, penghapusan akun, serta solusi digital marketing. Kami hadir untuk memberikan layanan yang profesional, cepat, dan terpercaya untuk mendukung kebutuhan dunia digital Anda.</p>
+        <p><strong>Siber Shop Store</strong> adalah startup berbasis digital yang berfokus pada layanan IT, keamanan siber, forensik digital, pembuatan website, penghapusan akun, serta solusi digital marketing. Kami hadir untuk memberikan layanan yang profesional, cepat, dan terpercaya untuk mendukung kebutuhan dunia digital Anda.</p>
 
-      <h5 class="mt-4">Visi Kami</h5>
-      <p>Menjadi mitra digital terpercaya di Indonesia dalam menyediakan layanan IT dan keamanan siber yang inovatif, aman, dan berkualitas tinggi.</p>
+        <h5 class="mt-4">Visi Kami</h5>
+        <p>Menjadi mitra digital terpercaya di Indonesia dalam menyediakan layanan IT dan keamanan siber yang inovatif, aman, dan berkualitas tinggi.</p>
 
-      <h5 class="mt-4">Misi Kami</h5>
-      <ul>
-        <li>Menyediakan layanan IT yang terjangkau dan berkualitas tinggi.</li>
-        <li>Mengedukasi masyarakat tentang pentingnya keamanan data di dunia digital.</li>
-        <li>Memberikan solusi cepat dan efektif terhadap masalah keamanan siber.</li>
-        <li>Mendukung UMKM dan bisnis baru dalam transformasi digital mereka.</li>
-      </ul>
+        <h5 class="mt-4">Misi Kami</h5>
+        <ul>
+          <li>Menyediakan layanan IT yang terjangkau dan berkualitas tinggi.</li>
+          <li>Mengedukasi masyarakat tentang pentingnya keamanan data di dunia digital.</li>
+          <li>Memberikan solusi cepat dan efektif terhadap masalah keamanan siber.</li>
+          <li>Mendukung UMKM dan bisnis baru dalam transformasi digital mereka.</li>
+        </ul>
 
-      <h5 class="mt-4">Kenapa Memilih Kami?</h5>
-      <ul>
-        <li><strong>Berpengalaman:</strong> Dikelola oleh tim yang ahli di bidang IT dan keamanan siber.</li>
-        <li><strong>Terpercaya:</strong> Mengutamakan privasi dan keamanan klien.</li>
-        <li><strong>Harga Kompetitif:</strong> Layanan berkualitas dengan harga yang ramah.</li>
-        <li><strong>Dukungan Penuh:</strong> Kami siap membantu setiap kebutuhan Anda, 24/7.</li>
-      </ul>
+        <h5 class="mt-4">Kenapa Memilih Kami?</h5>
+        <ul>
+          <li><strong>Berpengalaman:</strong> Dikelola oleh tim yang ahli di bidang IT dan keamanan siber.</li>
+          <li><strong>Terpercaya:</strong> Mengutamakan privasi dan keamanan klien.</li>
+          <li><strong>Harga Kompetitif:</strong> Layanan berkualitas dengan harga yang ramah.</li>
+          <li><strong>Dukungan Penuh:</strong> Kami siap membantu setiap kebutuhan Anda, 24/7.</li>
+        </ul>
 
-      <h5 class="mt-4">Hubungi Kami</h5>
-      <p>Untuk informasi lebih lanjut atau konsultasi, silakan kunjungi halaman <a href="contact.html">Contact</a>.</p>
+        <h5 class="mt-4">Hubungi Kami</h5>
+        <p>Untuk informasi lebih lanjut atau konsultasi, silakan kunjungi halaman <a href="contact.html">Contact</a>.</p>
 
-      <p class="mt-4 text-muted text-end">Terakhir diperbarui: 26 April 2025</p>
+        <p class="mt-4 text-muted text-end">Terakhir diperbarui: 26 April 2025</p>
+      </div>
     </div>
   </main>
 
