@@ -119,38 +119,49 @@
     &copy; 2025 Siber Shop Store - All Rights Reserved
   </footer>
 
-  <script src="breach.js"></script>
-  <script>
-    function checkEmail() {
-      const email = document.getElementById("emailInput").value.trim();
-      if (!email) {
-        alert("Silakan masukkan email terlebih dahulu.");
-        return;
-      }
-
-      fetch(`https://leakcheck.net/api/public?check=${email}`)
-        .then(response => response.json())
-        .then(data => {
-          if (data.success && data.found) {
-            const breach = data.sources[0]; // Ambil hanya satu hasil
-            document.getElementById("breachImage").src = breach.image || "fallback.jpg";
-            document.getElementById("resultText").innerText =
-              `Email: ${email}
-Sumber: ${breach.name}
-Tanggal: ${breach.date}
-Jumlah Data: ${breach.records}`;
-            document.getElementById("result").classList.remove("d-none");
-          } else {
-            document.getElementById("breachImage").src = "";
-            document.getElementById("resultText").innerText = "Tidak ditemukan kebocoran pada email ini.";
-            document.getElementById("result").classList.remove("d-none");
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          alert("Gagal mengambil data. Coba lagi nanti.");
-        });
+ <script>
+  function checkEmail() {
+    const email = document.getElementById("emailInput").value.trim();
+    if (!email) {
+      alert("Silakan masukkan email terlebih dahulu.");
+      return;
     }
-  </script>
+
+    fetch(`https://leakcheck.net/api/public?check=${email}`)
+      .then(response => response.json())
+      .then(data => {
+        const resultContainer = document.getElementById("result");
+        const resultText = document.getElementById("resultText");
+        const breachImage = document.getElementById("breachImage");
+
+        if (data.success && data.found && data.sources.length > 0) {
+          const breach = data.sources[0]; // hanya ambil 1 data
+          const imageUrl = breach.image || 'https://via.placeholder.com/600x300?text=No+Image';
+          const breachDate = breach.date || 'Tidak tersedia';
+          const breachRecords = breach.records || 'Tidak tersedia';
+          const breachName = breach.name || 'Tidak diketahui';
+
+          breachImage.src = imageUrl;
+          breachImage.alt = `Sumber bocor: ${breachName}`;
+
+          resultText.textContent = `Email       : ${email}
+Sumber      : ${breachName}
+Tanggal     : ${breachDate}
+Jumlah Data : ${breachRecords}`;
+
+          resultContainer.classList.remove("d-none");
+        } else {
+          breachImage.src = "";
+          resultText.textContent = "Tidak ditemukan kebocoran pada email ini.";
+          resultContainer.classList.remove("d-none");
+        }
+      })
+      .catch(error => {
+        console.error("Gagal mengambil data:", error);
+        alert("Terjadi kesalahan saat mengambil data. Silakan coba lagi nanti.");
+      });
+  }
+</script>
+
 </body>
 </html>
