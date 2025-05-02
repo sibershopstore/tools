@@ -1,4 +1,7 @@
-export async function handler(event) {
+// netlify/functions/breach.js
+const fetch = require('node-fetch');
+
+exports.handler = async (event) => {
   const email = event.queryStringParameters.check;
   if (!email) {
     return {
@@ -9,11 +12,7 @@ export async function handler(event) {
 
   try {
     const res = await fetch(`https://leakcheck.net/api/public?check=${encodeURIComponent(email)}`);
-    const text = await res.text();
-
-    const firstBraceIndex = text.indexOf("{");
-    const jsonString = text.slice(firstBraceIndex);
-    const data = JSON.parse(jsonString);
+    const data = await res.json();
 
     return {
       statusCode: 200,
@@ -26,4 +25,4 @@ export async function handler(event) {
       body: JSON.stringify({ success: false, error: "Gagal mengambil data dari LeakCheck." }),
     };
   }
-}
+};
