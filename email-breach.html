@@ -12,30 +12,20 @@
     .result-box { height: 220px; overflow-y: auto; white-space: pre-wrap; margin-top: 20px; resize: vertical; }
     .breach-details { margin-top: 20px; }
     header, footer {
-      background-color: #212529;
-      color: white;
-      padding: 15px 0;
+      background-color: #f1f1f1;
       text-align: center;
+      padding: 10px 0;
+      font-weight: bold;
     }
     footer {
       margin-top: auto;
     }
-    a.nav-link { color: white; margin: 0 10px; text-decoration: none; }
-    a.nav-link:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
 
   <header>
-    <div class="container d-flex justify-content-between align-items-center">
-      <div><strong>Siber Shop</strong></div>
-      <nav>
-        <a class="nav-link d-inline" href="index.html">Beranda</a>
-        <a class="nav-link d-inline" href="kebijakan-privasi.html">Privasi</a>
-        <a class="nav-link d-inline" href="about.html">Tentang</a>
-        <a class="nav-link d-inline" href="contact.html">Kontak</a>
-      </nav>
-    </div>
+    Siber Shop - Jasa Layanan Digital Terpercaya Nomor 1
   </header>
 
   <div class="container">
@@ -78,14 +68,14 @@
         const result = await response.json();
 
         if (result.success && result.sources.length > 0) {
-          let output = `Ditemukan ${result.sources.length} kebocoran:\n\n`;
+          let output = `✅ Email ditemukan dalam ${result.sources.length} kebocoran:\n\n`;
           let detailHTML = "";
 
           result.sources.forEach(source => {
             const dataTypes = source.data ? source.data.join(", ") : "Tidak diketahui";
             const domain = source.name.toLowerCase().replace(/\s+/g, "") + ".com";
 
-            output += `• ${source.name} — ${source.date}\n`;
+            output += `• ${source.name} — ${source.date}\n  Jenis Data Bocor: ${dataTypes}\n\n`;
 
             detailHTML += `
               <div class="card mb-3">
@@ -104,11 +94,11 @@
           resultBox.value = output;
           detailBox.innerHTML = detailHTML;
         } else {
-          resultBox.value = "Email kamu tidak ditemukan dalam database kebocoran.";
+          resultBox.value = "✅ Email kamu tidak ditemukan dalam database kebocoran.";
         }
       } catch (err) {
         console.error(err);
-        resultBox.value = "Gagal memeriksa data. Coba lagi nanti.";
+        resultBox.value = "❌ Gagal memeriksa data. Coba lagi nanti.";
       } finally {
         loading.style.display = "none";
       }
