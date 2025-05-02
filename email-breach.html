@@ -4,35 +4,18 @@
   <meta charset="UTF-8">
   <title>Cek Kebocoran Email - Siber Shop</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Bootstrap CSS & Font Awesome -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    html, body {
-      height: 100%; margin: 0; padding: 0;
-      display: flex; flex-direction: column;
-      background-color: #f8f9fa;
-    }
-    .navbar {
-      background-color: #212529;
-    }
-    .navbar-brand, .nav-link {
-      color: white !important;
-    }
-    .navbar-brand {
-      font-weight: bold; font-size: 1.5rem;
-    }
-    .nav-link.active {
-      font-weight: bold;
+    body {
+      background: #f8f9fa;
+      display: flex; flex-direction: column; min-height: 100vh;
     }
     main {
-      flex: 1; display: flex; justify-content: center; align-items: center;
-      padding: 40px 20px;
+      flex: 1; padding: 40px 20px; display: flex; justify-content: center; align-items: center;
     }
     .tool-box {
       background: #fff; padding: 30px; border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-      max-width: 800px; width: 100%;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1); max-width: 700px; width: 100%;
     }
     .result-box {
       width: 100%; min-height: 180px; max-height: 400px;
@@ -45,106 +28,47 @@
       display: none; margin-top: 15px; color: #777;
     }
     footer {
-      background-color: #212529; color: #fff;
-      text-align: center; padding: 15px 20px;
-      font-size: 0.9rem;
+      background: #212529; color: #fff; text-align: center; padding: 15px 20px;
     }
   </style>
 </head>
 <body>
 
-  <!-- Header (sama dengan Kebijakan Privasi) -->
-  <nav class="navbar navbar-expand-lg navbar-dark">
-    <div class="container">
-      <a class="navbar-brand" href="index.html">
-        <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
-      </a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-        <ul class="navbar-nav">
-          <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
-          <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
-          <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
-          <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
-        </ul>
-      </div>
+<!-- Header -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand" href="index.html">Siber Shop</a>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+      <ul class="navbar-nav">
+        <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
+        <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
+        <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
+      </ul>
     </div>
-  </nav>
+  </div>
+</nav>
 
-  <!-- Main Content -->
-  <main>
-    <div class="tool-box">
-      <h2 class="text-center mb-4">Cek Kebocoran Email</h2>
-      <div class="mb-3">
-        <input type="email" id="emailInput" class="form-control" placeholder="contoh@email.com">
-      </div>
-      <div class="d-grid mb-3">
-        <button id="checkBtn" class="btn btn-danger">Periksa Sekarang</button>
-      </div>
-      <div id="loading"><i class="fas fa-spinner fa-spin"></i> Memeriksa data...</div>
-      <textarea id="resultBox" class="result-box" readonly placeholder="Hasil akan muncul di sini..."></textarea>
+<!-- Main Content -->
+<main>
+  <div class="tool-box">
+    <h2 class="text-center mb-4">Cek Kebocoran Email</h2>
+    <div class="mb-3">
+      <input type="email" id="emailInput" class="form-control" placeholder="contoh@email.com">
     </div>
-  </main>
+    <div class="d-grid mb-3">
+      <button id="checkBtn" class="btn btn-danger">Periksa Sekarang</button>
+    </div>
+    <div id="loading">🔄 Sedang memeriksa data...</div>
+    <textarea id="resultBox" class="result-box" readonly placeholder="Hasil akan muncul di sini..."></textarea>
+  </div>
+</main>
 
-  <!-- Footer (sama dengan Kebijakan Privasi) -->
-  <footer>
-    &copy; 2025 Siber Shop Store - All Rights Reserved
-  </footer>
+<!-- Footer -->
+<footer>
+  &copy; 2025 Siber Shop Store - All Rights Reserved
+</footer>
 
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <!-- Core Script -->
-  <script>
-    document.getElementById('checkBtn').addEventListener('click', async () => {
-      const email = document.getElementById('emailInput').value.trim();
-      const loading = document.getElementById('loading');
-      const resultBox = document.getElementById('resultBox');
-
-      resultBox.value = '';
-      loading.style.display = 'none';
-
-      if (!email) {
-        alert('Silakan masukkan email.');
-        return;
-      }
-
-      loading.style.display = 'block';
-
-      try {
-        const res = await fetch(
-          `https://breachdirectory.p.rapidapi.com/?func=auto&term=${encodeURIComponent(email)}`, {
-            method: 'GET',
-            headers: {
-              'X-RapidAPI-Key': '086ce2e822mshcebcaa238595670p10beddjsn9d0c243c876a',
-              'X-RapidAPI-Host': 'breachdirectory.p.rapidapi.com'
-            }
-          }
-        );
-
-        if (!res.ok) throw new Error(res.status);
-
-        const data = await res.json();
-        const sites = Object.keys(data);
-
-        if (sites.length === 0) {
-          resultBox.value = `✅ Email "${email}" tidak ditemukan dalam database kebocoran.`;
-        } else {
-          let summary = `⚠️ Email "${email}" terlibat dalam ${sites.length} breach:\n\n`;
-          sites.forEach(site => {
-            const count = Array.isArray(data[site]) ? data[site].length : 0;
-            summary += `• ${site} — ${count.toLocaleString()} entry\n`;
-          });
-          resultBox.value = summary;
-        }
-      } catch (err) {
-        console.error(err);
-        resultBox.value = '❌ Gagal memeriksa data. Coba lagi nanti.';
-      } finally {
-        loading.style.display = 'none';
-      }
-    });
-  </script>
+<!-- Script -->
+<script src="breach-checker.js"></script>
 </body>
 </html>
