@@ -1,19 +1,29 @@
-// netlify/functions/breach.js
-const fetch = require('node-fetch');
-exports.handler = async (event) => {
-  if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, headers:{'Access-Control-Allow-Origin':'*'}, body:'Method Not Allowed' };
+export async function handler(event) {
+  const email = event.queryStringParameters.check;
+  if (!email) {
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ success: false, error: "Parameter 'check' diperlukan." }),
+    };
   }
-  const { email } = JSON.parse(event.body);
+
   try {
-    const res = await fetch(`https://psbdmp.ws/api/search?email=${encodeURIComponent(email)}`);
-    const data = await res.json();
+    const res = await fetch(`https://leakcheck.net/api/public?check=${encodeURIComponent(email)}`);
+    const text = await res.text();
+
+    const firstBraceIndex = text.indexOf("{");
+    const jsonString = text.slice(firstBraceIndex);
+    const data = JSON.parse(jsonString);
+
     return {
       statusCode: 200,
-      headers:{'Access-Control-Allow-Origin':'*'},
-      body: JSON.stringify(data)
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
     };
-  } catch(err) {
-    return { statusCode: 500, headers:{'Access-Control-Allow-Origin':'*'}, body: JSON.stringify({ error: 'Server error' }) };
+  } catch (error) {
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ success: false, error: "Gagal mengambil data dari LeakCheck." }),
+    };
   }
-};
+}
