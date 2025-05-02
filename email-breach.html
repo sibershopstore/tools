@@ -4,123 +4,71 @@
   <meta charset="UTF-8">
   <title>Cek Kebocoran Email - Siber Shop</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Bootstrap & FontAwesome -->
+  <!-- Bootstrap CSS & FontAwesome -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    html, body {
-      height: 100%; margin: 0; padding: 0;
-      display: flex; flex-direction: column;
-      background-color: #f8f9fa;
-    }
-    .navbar { background-color: #212529; }
-    .navbar-brand, .nav-link { color: white !important; }
-    .navbar-brand { font-weight: bold; font-size: 1.5rem; }
-    .nav-link.active { font-weight: bold; }
-    main {
-      flex: 1; display: flex; align-items: center; justify-content: center;
-      padding: 40px 20px;
-    }
-    .tool-box {
-      background: #fff; padding: 30px; border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-      max-width: 700px; width: 100%;
-    }
-    #loading {
-      display: none; margin-top: 15px; color: #777;
-    }
-    .result-box {
-      width: 100%; min-height: 180px; max-height: 400px;
-      margin-top: 20px; padding: 15px;
-      border: 1px solid #dee2e6; border-radius: 8px;
-      background: #fdfdfd; white-space: pre-wrap;
-      overflow-y: auto; resize: vertical;
-    }
-    footer {
-      background-color: #212529; color: #fff;
-      text-align: center; padding: 15px 20px; font-size: 0.9rem;
-    }
+    /* ... pakai style header/footer seperti Kebijakan Privasi ... */
+    #loading { display: none; }
+    .result-box { /* ukuran textarea */ }
   </style>
 </head>
 <body>
-
-  <!-- Header (sama dengan Kebijakan Privasi) -->
-  <nav class="navbar navbar-expand-lg navbar-dark">
+  <!-- Header (kopi dari Kebijakan Privasi) -->
+  <nav class="navbar navbar-expand-lg navbar-dark" style="background-color:#212529">
     <div class="container">
-      <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved me-2"></i>Siber Shop</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div id="navbarNav" class="collapse navbar-collapse justify-content-end">
-        <ul class="navbar-nav">
-          <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
-          <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
-          <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
-          <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
-        </ul>
-      </div>
+      <a class="navbar-brand" href="index.html">Siber Shop</a>
+      <!-- nav links... -->
     </div>
   </nav>
 
-  <!-- Main Content -->
-  <main>
-    <div class="tool-box">
+  <main class="d-flex justify-content-center align-items-center" style="flex:1;padding:40px">
+    <div class="tool-box bg-white p-4 rounded shadow-sm" style="max-width:700px;width:100%">
       <h2 class="text-center mb-4">Cek Kebocoran Email</h2>
-      <input type="email" id="emailInput" class="form-control mb-3" placeholder="contoh@example.com">
-      <button id="checkBtn" class="btn btn-danger w-100">Periksa Sekarang</button>
-      <div id="loading"><i class="fas fa-spinner fa-spin"></i> Memeriksa data...</div>
-      <textarea id="resultBox" class="result-box" readonly placeholder="Hasil akan muncul di sini..."></textarea>
+      <input id="emailInput" class="form-control mb-3" placeholder="contoh@example.com" type="email">
+      <button id="checkBtn" class="btn btn-danger w-100 mb-3">Periksa Sekarang</button>
+      <div id="loading" class="text-center text-muted mb-3">
+        <i class="fas fa-spinner fa-spin"></i> Memeriksa data...
+      </div>
+      <textarea id="resultBox" class="form-control" rows="8" readonly placeholder="Hasil akan muncul di sini..."></textarea>
     </div>
   </main>
 
-  <!-- Footer (sama dengan Kebijakan Privasi) -->
-  <footer>
+  <!-- Footer -->
+  <footer class="text-center text-white" style="background:#212529;padding:15px">
     &copy; 2025 Siber Shop Store - All Rights Reserved
   </footer>
 
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const btn = document.getElementById('checkBtn');
+    document.getElementById('checkBtn').addEventListener('click', async () => {
+      const email = document.getElementById('emailInput').value.trim();
       const loading = document.getElementById('loading');
       const resultBox = document.getElementById('resultBox');
-      const emailInput = document.getElementById('emailInput');
 
-      // hide loading initially
-      loading.style.display = 'none';
+      resultBox.value = '';
+      if (!email) { alert('Masukkan email'); return; }
+      loading.style.display = 'block';
 
-      btn.addEventListener('click', async () => {
-        const email = emailInput.value.trim();
-        resultBox.value = '';
-        if (!email) {
-          alert('Silakan masukkan email.');
-          return;
+      try {
+        const res = await fetch(`/.netlify/functions/breach?check=${encodeURIComponent(email)}`);
+        if (!res.ok) throw new Error(res.statusText);
+        const data = await res.json();
+
+        if (data.success && data.sources?.length) {
+          let out = `⚠️ Email "${email}" ditemukan dalam ${data.sources.length} kebocoran:\n\n`;
+          data.sources.forEach(s => {
+            out += `• ${s.name} — ${s.date || '–'}\n`;
+          });
+          resultBox.value = out;
+        } else {
+          resultBox.value = `✅ Email "${email}" tidak ditemukan dalam database kebocoran.`;
         }
-
-        loading.style.display = 'block';
-
-        try {
-          const res = await fetch('https://leakcheck.net/api/public?check=' + encodeURIComponent(email));
-          if (!res.ok) throw new Error('Status ' + res.status);
-          const data = await res.json();
-
-          if (data.success && Array.isArray(data.sources) && data.sources.length) {
-            let out = `⚠️ Email "${email}" ditemukan dalam ${data.sources.length} kebocoran:\n\n`;
-            data.sources.forEach(src => {
-              out += `• ${src.name} — ${src.date || 'Tanggal tidak tersedia'}\n`;
-            });
-            resultBox.value = out;
-          } else {
-            resultBox.value = `✅ Email "${email}" tidak ditemukan dalam database kebocoran.`;
-          }
-        } catch (err) {
-          console.error(err);
-          resultBox.value = '❌ Gagal memeriksa data. Coba lagi nanti.';
-        } finally {
-          loading.style.display = 'none';
-        }
-      });
+      } catch (err) {
+        console.error(err);
+        resultBox.value = '❌ Gagal memeriksa data. Coba lagi nanti.';
+      } finally {
+        loading.style.display = 'none';
+      }
     });
   </script>
 </body>
