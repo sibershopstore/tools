@@ -16,29 +16,34 @@ document.getElementById('checkBtn').addEventListener('click', () => {
   const xhr = new XMLHttpRequest();
   xhr.withCredentials = false;
 
-  xhr.addEventListener('readystatechange', function () {
-    if (this.readyState === this.DONE) {
+  xhr.onreadystatechange = function () {
+    if (xhr.readyState === 4) {
       loading.style.display = 'none';
-      try {
-        const response = JSON.parse(this.responseText);
-        const sites = Object.keys(response);
+      if (xhr.status === 200) {
+        try {
+          const response = JSON.parse(xhr.responseText);
+          const sites = Object.keys(response);
 
-        if (sites.length === 0) {
-          resultBox.value = `✅ Email "${email}" tidak ditemukan dalam database kebocoran.`;
-        } else {
-          let output = `⚠️ Email "${email}" ditemukan dalam ${sites.length} kebocoran:\n\n`;
-          sites.forEach(site => {
-            const count = Array.isArray(response[site]) ? response[site].length : 0;
-            output += `• ${site} — ${count.toLocaleString()} data\n`;
-          });
-          resultBox.value = output;
+          if (sites.length === 0) {
+            resultBox.value = `✅ Email "${email}" tidak ditemukan dalam database kebocoran.`;
+          } else {
+            let output = `⚠️ Email "${email}" ditemukan dalam ${sites.length} kebocoran:\n\n`;
+            sites.forEach(site => {
+              const count = Array.isArray(response[site]) ? response[site].length : 0;
+              output += `• ${site} — ${count.toLocaleString()} data\n`;
+            });
+            resultBox.value = output;
+          }
+        } catch (e) {
+          console.error(e);
+          resultBox.value = '❌ Gagal memproses data respons.';
         }
-      } catch (e) {
-        resultBox.value = '❌ Gagal memproses data. Pastikan API key valid.';
-        console.error(e);
+      } else {
+        console.error('Status:', xhr.status);
+        resultBox.value = '❌ Gagal memeriksa data. Coba lagi nanti.';
       }
     }
-  });
+  };
 
   const url = `https://breachdirectory.p.rapidapi.com/?func=auto&term=${encodeURIComponent(email)}`;
   xhr.open('GET', url);
