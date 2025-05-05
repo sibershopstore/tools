@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Compressor - Siber Shop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Bootstrap & Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      font-family: 'Poppins', sans-serif;
+    }
+    /* HEADER */
+    .navbar {
+      background-color: #212529;
+    }
+    .navbar .container { padding: 0; }
+    .navbar-brand { font-weight: bold; font-size: 1.5rem; color: #fff !important; padding-left: 1rem; }
+    .nav-link { color: #fff !important; font-size: 1rem; padding: .75rem 1rem; }
+    .nav-link:hover, .nav-link.active { color: #ffc107 !important; font-weight: bold; }
+    /* FOOTER */
+    footer {
+      background-color: #212529;
+      color: #fff;
+      text-align: center;
+      padding: 15px 20px;
+      font-size: .9rem;
+      margin-top: auto;
+    }
+    /* COMPRESSOR */
+    main { flex: 1; }
+    .compressor-section {
+      padding: 40px 20px;
+      background: #fff;
+    }
+    .tool-box { max-width: 600px; margin: auto; }
+    .tool-box label, .tool-box select, .tool-box input, .tool-box button {
+      width: 100%; margin-top: .5rem;
+    }
+    .tool-box button {
+      background: #212529; color: #fff; border: none;
+    }
+    .tool-box button:hover { background: #343a40; }
+    #previewSection {
+      display: none;
+      margin-top: 2rem;
+    }
+    .preview-box {
+      display: flex;
+      gap: 1rem;
+      justify-content: space-between;
+    }
+    .preview-box > div {
+      flex: 1;
+      text-align: center;
+    }
+    .preview-box img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid #dee2e6;
+      border-radius: 5px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">
+        <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
+          <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Compressor Section -->
+  <main class="compressor-section">
+    <div class="container tool-box">
+      <h2 class="mb-4 text-center">🖼️ Image Compressor</h2>
+
+      <label for="modeSelect">Mode Kompresi:</label>
+      <select id="modeSelect" class="form-select">
+        <option value="auto">Otomatis (berdasarkan kualitas)</option>
+        <option value="custom">Custom (berdasarkan ukuran file)</option>
+      </select>
+
+      <label for="imageInput">Pilih Gambar:</label>
+      <input type="file" id="imageInput" accept="image/*" class="form-control" />
+
+      <label for="qualityRange">Kualitas (0.1–1): <span id="qualityValue">0.9</span></label>
+      <input type="range" id="qualityRange" min="0.1" max="1" step="0.05" value="0.9" class="form-range" />
+
+      <div id="customOptions">
+        <label for="targetSize">Ukuran target (KB):</label>
+        <input type="number" id="targetSize" value="1000" min="50" step="50" class="form-control" />
+      </div>
+
+      <button id="compressBtn" class="btn mt-3">Kompres</button>
+      <button id="downloadBtn" class="btn mt-2">Unduh</button>
+
+      <div id="previewSection">
+        <div class="preview-box">
+          <div>
+            <h6>Asli</h6>
+            <img id="originalPreview" src="" alt="Original" />
+          </div>
+          <div>
+            <h6>Terkompresi</h6>
+            <img id="compressedPreview" src="" alt="Compressed" />
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    &copy; 2025 Siber Shop Store - All Rights Reserved
+  </footer>
+
+  <!-- Bootstrap JS & Compressor Script -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const modeSelect      = document.getElementById('modeSelect');
+    const customOptions   = document.getElementById('customOptions');
+    const fileInput       = document.getElementById('imageInput');
+    const qualityRange    = document.getElementById('qualityRange');
+    const qualityValue    = document.getElementById('qualityValue');
+    const targetSizeInput = document.getElementById('targetSize');
+    const origImg         = document.getElementById('originalPreview');
+    const compImg         = document.getElementById('compressedPreview');
+    const compressBtn     = document.getElementById('compressBtn');
+    const downloadBtn     = document.getElementById('downloadBtn');
+    const previewSection  = document.getElementById('previewSection');
+
+    let originalImage = null;
+    let originalDataURL = '';
+    let compressedData = '';
+
+    // Inisialisasi
+    customOptions.style.display = 'none';
+    downloadBtn.style.display = 'none';
+
+    modeSelect.onchange = () => {
+      customOptions.style.display = modeSelect.value === 'custom' ? 'block' : 'none';
+      previewSection.style.display = 'none';
+      downloadBtn.style.display = 'none';
+    };
+
+    qualityRange.oninput = () => {
+      qualityValue.textContent = qualityRange.value;
+      previewSection.style.display = 'none';
+      downloadBtn.style.display = 'none';
+    };
+
+    fileInput.onchange = e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = evt => {
+        originalDataURL = evt.target.result;
+        originalImage = new Image();
+        originalImage.onload = () => {
+          // Tampilkan preview asli hanya setelah kompresi
+          previewSection.style.display = 'none';
+          downloadBtn.style.display = 'none';
+        };
+        originalImage.src = originalDataURL;
+      };
+      reader.readAsDataURL(file);
+    };
+
+    compressBtn.onclick = () => {
+      if (!originalImage) return;
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      canvas.width = originalImage.width;
+      canvas.height = originalImage.height;
+      ctx.drawImage(originalImage, 0, 0);
+
+      if (modeSelect.value === 'auto') {
+        // Otomatis: turunkan kualitas sampai < asli
+        let q = parseFloat(qualityRange.value);
+        let dataUrl = canvas.toDataURL('image/jpeg', q);
+        const origKB = (originalDataURL.length * 0.75) / 1024;
+        let compKB = (dataUrl.length * 0.75) / 1024;
+        while (compKB >= origKB && q > 0.1) {
+          q -= 0.05;
+          dataUrl = canvas.toDataURL('image/jpeg', q);
+          compKB = (dataUrl.length * 0.75) / 1024;
+        }
+        compressedData = dataUrl;
+      } else {
+        // Custom: binary search
+        const kbTarget = parseInt(targetSizeInput.value, 10);
+        let low = 0.1, high = parseFloat(qualityRange.value), mid, dataUrl, sizeKb;
+        for (let i = 0; i < 8; i++) {
+          mid = (low + high) / 2;
+          dataUrl = canvas.toDataURL('image/jpeg', mid);
+          sizeKb = (dataUrl.length * 0.75) / 1024;
+          if (sizeKb > kbTarget) high = mid;
+          else low = mid;
+        }
+        compressedData = canvas.toDataURL('image/jpeg', low);
+      }
+
+      // Tampilkan hasil sejajar
+      origImg.src = originalDataURL;
+      compImg.src = compressedData;
+      previewSection.style.display = 'block';
+      downloadBtn.style.display = 'block';
+    };
+
+    downloadBtn.onclick = () => {
+      if (!compressedData) return;
+      const a = document.createElement('a');
+      a.href = compressedData;
+      a.download = 'compressed.jpg';
+      a.click();
+    };
+  </script>
+</body>
+</html>

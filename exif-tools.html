@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Image Metadata Viewer - Siber Shop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Bootstrap & Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      font-family: 'Poppins', sans-serif;
+    }
+    .navbar { background-color: #212529; }
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 1.5rem;
+      color: #fff !important;
+    }
+    .nav-link {
+      color: #fff !important;
+    }
+    .nav-link:hover, .nav-link.active {
+      font-weight: bold;
+      color: #ffc107 !important;
+    }
+    footer {
+      background-color: #212529;
+      color: #fff;
+      text-align: center;
+      padding: 15px;
+      margin-top: auto;
+    }
+    main { flex: 1; padding: 40px 20px; }
+    .metadata-section {
+      background: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    .table-responsive {
+      margin-top: 20px;
+    }
+    .location-info {
+      font-weight: bold;
+      margin-top: 20px;
+      background: #e9f7ef;
+      padding: 15px;
+      border-radius: 8px;
+      color: #155724;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">
+        <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
+          <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="container">
+    <div class="metadata-section">
+      <h3 class="text-center">Cek Metadata Gambar (EXIF + Lokasi)</h3>
+      <input type="file" class="form-control" id="imageInput" accept="image/*">
+      <div class="table-responsive" id="metadataTable"></div>
+      <div id="locationInfo" class="location-info"></div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    &copy; 2025 Siber Shop Store - All Rights Reserved
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/lite.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/full.umd.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/javascript-obfuscator/dist/index.browser.js"></script>
+  <script>
+    const input = document.getElementById('imageInput');
+    const metadataTable = document.getElementById('metadataTable');
+    const locationInfo = document.getElementById('locationInfo');
+  
+   
+    const encodedKey = "ZDVkYzAzOGY1NzUzNDY0MjgxZmYwMTZiZjIyODdlYWM=";
+    const openCageApiKey = atob(encodedKey); 
+  
+    input.addEventListener('change', async () => {
+      const file = input.files[0];
+      metadataTable.innerHTML = '';
+      locationInfo.textContent = '';
+  
+      if (!file) return;
+  
+      try {
+        const metadata = await exifr.parse(file);
+        if (!metadata) throw new Error("Tidak ada metadata ditemukan.");
+  
+        let tableHTML = '<table class="table table-bordered table-striped">';
+        tableHTML += '<thead class="table-dark"><tr><th>Properti</th><th>Nilai</th></tr></thead><tbody>';
+  
+        const fileSizeKB = (file.size / 1024).toFixed(2);
+        tableHTML += `<tr><td>Ukuran File</td><td>${fileSizeKB} KB</td></tr>`;
+  
+        if (metadata.DateTimeOriginal) {
+          const dateFormatted = new Date(metadata.DateTimeOriginal).toLocaleString('id-ID');
+          tableHTML += `<tr><td>Tanggal Pengambilan</td><td>${dateFormatted}</td></tr>`;
+        }
+  
+        for (const key in metadata) {
+          if (metadata.hasOwnProperty(key) && key !== 'DateTimeOriginal') {
+            let value = metadata[key];
+            if (typeof value === 'object' && value !== null) value = JSON.stringify(value);
+            tableHTML += `<tr><td>${key}</td><td>${value}</td></tr>`;
+          }
+        }
+  
+        tableHTML += '</tbody></table>';
+        metadataTable.innerHTML = tableHTML;
+  
+        if (metadata.latitude && metadata.longitude) {
+          const lat = metadata.latitude;
+          const lon = metadata.longitude;
+          const response = await fetch(`https://api.opencagedata.com/geocode/v1/json?q=${lat}+${lon}&key=${openCageApiKey}`);
+          const data = await response.json();
+  
+          if (data.results && data.results.length > 0) {
+            const address = data.results[0].formatted;
+            locationInfo.textContent = `📍 Lokasi foto: ${address}`;
+          } else {
+            locationInfo.textContent = '⚠️ Tidak dapat menemukan alamat dari koordinat.';
+          }
+        } else {
+          locationInfo.textContent = '⚠️ Metadata tidak mengandung informasi GPS.';
+        }
+  
+      } catch (err) {
+        metadataTable.innerHTML = `<div class="alert alert-danger">Gagal membaca metadata: ${err.message}</div>`;
+      }
+    });
+  </script>
+  
+  
+  
+</body>
+</html>
