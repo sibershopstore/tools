@@ -20,32 +20,11 @@
       min-height: 100vh;
     }
     /* HEADER */
-    .navbar {
-      background-color: #212529;
-    }
-    .navbar .container {
-      padding-left: 0;
-      padding-right: 0;
-    }
-    .navbar-brand {
-      font-weight: bold;
-      font-size: 1.5rem;
-      color: #fff !important;
-      padding-left: 1rem;
-    }
-    .nav-link {
-      color: #fff !important;
-      font-size: 1rem;
-      padding: 0.75rem 1rem;
-    }
-    .nav-link:hover, .nav-link.active {
-      font-weight: bold;
-      color: #ffc107 !important;
-    }
-    .navbar-toggler {
-      border: none;
-      margin-right: 1rem;
-    }
+    .navbar { background-color: #212529; }
+    .navbar .container { padding: 0; }
+    .navbar-brand { font-weight: bold; font-size: 1.5rem; color: #fff !important; padding-left: 1rem; }
+    .nav-link { color: #fff !important; font-size: 1rem; padding: .75rem 1rem; }
+    .nav-link:hover, .nav-link.active { font-weight: bold; color: #ffc107 !important; }
     /* Upload Section */
     .upload-section { padding: 40px 20px; background: #fff; margin-top: 20px; flex: 1; }
     .dropzone {
@@ -68,7 +47,6 @@
       padding: 10px 20px; background: #28a745; color: #fff;
       border: none; cursor: pointer;
     }
-    .btn-upload:disabled { background: #6c757d; }
     /* Progress & Done */
     #progressContainer { display: none; margin-top: 20px; }
     #percentContainer, #barContainer { margin-bottom: .5rem; }
@@ -113,7 +91,8 @@
       <div class="dropzone" id="dropzone"><p>Klik atau seret file PDF ke sini</p></div>
       <ul id="fileList" class="file-list"></ul>
       <div class="controls">
-        <button class="btn-upload" id="mergeButton" disabled>Gabungkan PDF</button>
+        <!-- disabled attribute dihapus agar selalu bisa diklik -->
+        <button class="btn-upload" id="mergeButton">Gabungkan PDF</button>
       </div>
 
       <div id="progressContainer">
@@ -142,17 +121,17 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     const { PDFDocument } = PDFLib;
-    const dropzone      = document.getElementById('dropzone');
-    const fileInput     = document.getElementById('fileInput');
-    const mergeButton   = document.getElementById('mergeButton');
-    const fileList      = document.getElementById('fileList');
-    const progressCtr   = document.getElementById('progressContainer');
-    const percentCtr    = document.getElementById('percentContainer');
-    const barCtr        = document.getElementById('barContainer');
-    const progressBar   = document.getElementById('progressBar');
-    const percentText   = document.getElementById('percentText');
-    const doneText      = document.getElementById('doneText');
-    const downloadBtn   = document.getElementById('downloadBtn');
+    const dropzone    = document.getElementById('dropzone');
+    const fileInput   = document.getElementById('fileInput');
+    const mergeButton = document.getElementById('mergeButton');
+    const fileList    = document.getElementById('fileList');
+    const progressCtr = document.getElementById('progressContainer');
+    const percentCtr  = document.getElementById('percentContainer');
+    const barCtr      = document.getElementById('barContainer');
+    const progressBar = document.getElementById('progressBar');
+    const percentText = document.getElementById('percentText');
+    const doneText    = document.getElementById('doneText');
+    const downloadBtn = document.getElementById('downloadBtn');
     let files = [];
 
     // open file picker
@@ -169,7 +148,6 @@
           fileList.appendChild(createItem(file));
         }
       });
-      mergeButton.disabled = !files.length;
       new Sortable(fileList, { animation:150, onEnd:updateOrder });
     }
 
@@ -178,19 +156,22 @@
       li.textContent = file.name;
       const rm = document.createElement('span');
       rm.textContent = '❌'; rm.classList.add('remove');
-      rm.onclick = () => { files = files.filter(f=>f!==file); li.remove(); mergeButton.disabled = !files.length; };
+      rm.onclick = () => { files = files.filter(f=>f!==file); li.remove(); };
       li.appendChild(rm);
       return li;
     }
 
     function updateOrder() {
-      const ordered = Array.from(fileList.children)
+      files = Array.from(fileList.children)
         .map(li => files.find(f=>f.name===li.firstChild.textContent.trim()))
-        .filter(f=>f);
-      files = ordered;
+        .filter(Boolean);
     }
 
     mergeButton.onclick = async () => {
+      if (files.length === 0) {
+        return alert('Silakan unggah minimal satu file PDF terlebih dahulu.');
+      }
+
       // sembunyikan area upload dan list
       dropzone.style.display = 'none';
       fileList.style.display = 'none';
@@ -198,12 +179,12 @@
 
       progressCtr.style.display = 'block';
       // animate 1→100% tiap 20ms
-      let prog=0;
+      let prog = 0;
       const animate = () => {
         prog++;
-        progressBar.style.width = prog+'%';
-        percentText.textContent = prog+'%';
-        if (prog<100) setTimeout(animate,20);
+        progressBar.style.width = prog + '%';
+        percentText.textContent = prog + '%';
+        if (prog < 100) setTimeout(animate, 20);
       };
       animate();
 
@@ -213,13 +194,13 @@
         const buf = await f.arrayBuffer();
         const pdf = await PDFDocument.load(buf);
         const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
-        pages.forEach(p=>mergedPdf.addPage(p));
+        pages.forEach(p => mergedPdf.addPage(p));
       }
       const bytes = await mergedPdf.save();
 
       // setelah merge selesai dan animasi capai 100%
       const checkDone = () => {
-        if (prog>=100) {
+        if (prog >= 100) {
           percentCtr.style.display = 'none';
           barCtr.style.display     = 'none';
           doneText.style.display   = 'block';
@@ -227,7 +208,7 @@
           downloadBtn.href = URL.createObjectURL(blob);
           downloadBtn.style.display = 'inline-block';
         } else {
-          setTimeout(checkDone,20);
+          setTimeout(checkDone, 20);
         }
       };
       checkDone();
