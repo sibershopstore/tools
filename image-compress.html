@@ -21,9 +21,7 @@
     }
     .navbar .container { padding: 0; }
     .navbar-brand { font-weight: bold; font-size: 1.5rem; color: #fff !important; padding-left: 1rem; }
-    .navbar-toggler {
-      margin-left: -1rem; /* Perbaiki posisi tombol garis tiga */
-    }
+    .navbar-toggler { margin-left: 0 !important; }
     .nav-link { color: #fff !important; font-size: 1rem; padding: .75rem 1rem; }
     .nav-link:hover, .nav-link.active { color: #ffc107 !important; font-weight: bold; }
     /* FOOTER */
@@ -68,10 +66,15 @@
       border: 1px solid #dee2e6;
       border-radius: 5px;
     }
-    /* Notifikasi */
+
+    /* Floating Alert */
     .alert {
-      display: none;
-      margin-top: 1rem;
+      position: fixed;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1050;
+      max-width: 400px;
     }
   </style>
 </head>
@@ -112,12 +115,13 @@
       <input type="file" id="imageInput" accept="image/*" class="form-control" />
 
       <label for="qualityRange">Kualitas:</label>
-      <select id="qualityRange" class="form-select">
-        <option value="0.1">Buruk</option>
-        <option value="0.3">Kurang Bagus</option>
-        <option value="0.6">Bagus</option>
-        <option value="0.9">Sangat Bagus</option>
-      </select>
+      <input type="range" id="qualityRange" min="0.1" max="1" step="0.05" value="0.9" class="form-range" />
+      <div id="qualityLabels">
+        <span id="qualityLabel1">Buruk</span>
+        <span id="qualityLabel2">Kurang Bagus</span>
+        <span id="qualityLabel3">Bagus</span>
+        <span id="qualityLabel4">Sangat Bagus</span>
+      </div>
 
       <div id="customOptions">
         <label for="targetSize">Ukuran target (KB):</label>
@@ -125,11 +129,7 @@
       </div>
 
       <button id="compressBtn" class="btn mt-3">Kompres</button>
-      <button id="downloadBtn" class="btn mt-2" style="display: none;">Unduh</button>
-
-      <div id="alert" class="alert alert-danger" role="alert">
-        Silakan masukkan gambar terlebih dahulu!
-      </div>
+      <button id="downloadBtn" class="btn mt-2">Unduh</button>
 
       <div id="previewSection">
         <div class="preview-box">
@@ -158,15 +158,17 @@
     const customOptions   = document.getElementById('customOptions');
     const fileInput       = document.getElementById('imageInput');
     const qualityRange    = document.getElementById('qualityRange');
-    const qualityValue    = document.getElementById('qualityValue');
+    const qualityLabel1   = document.getElementById('qualityLabel1');
+    const qualityLabel2   = document.getElementById('qualityLabel2');
+    const qualityLabel3   = document.getElementById('qualityLabel3');
+    const qualityLabel4   = document.getElementById('qualityLabel4');
     const targetSizeInput = document.getElementById('targetSize');
     const origImg         = document.getElementById('originalPreview');
     const compImg         = document.getElementById('compressedPreview');
     const compressBtn     = document.getElementById('compressBtn');
     const downloadBtn     = document.getElementById('downloadBtn');
     const previewSection  = document.getElementById('previewSection');
-    const alert           = document.getElementById('alert');
-
+    
     let originalImage = null;
     let originalDataURL = '';
     let compressedData = '';
@@ -174,13 +176,36 @@
     // Inisialisasi
     customOptions.style.display = 'none';
     downloadBtn.style.display = 'none';
-    alert.style.display = 'none';
 
     modeSelect.onchange = () => {
       customOptions.style.display = modeSelect.value === 'custom' ? 'block' : 'none';
       previewSection.style.display = 'none';
       downloadBtn.style.display = 'none';
-      alert.style.display = 'none';
+    };
+
+    qualityRange.oninput = () => {
+      let value = qualityRange.value;
+      if (value <= 0.25) {
+        qualityLabel1.style.color = 'red';
+        qualityLabel2.style.color = 'black';
+        qualityLabel3.style.color = 'black';
+        qualityLabel4.style.color = 'black';
+      } else if (value <= 0.5) {
+        qualityLabel1.style.color = 'black';
+        qualityLabel2.style.color = 'red';
+        qualityLabel3.style.color = 'black';
+        qualityLabel4.style.color = 'black';
+      } else if (value <= 0.75) {
+        qualityLabel1.style.color = 'black';
+        qualityLabel2.style.color = 'black';
+        qualityLabel3.style.color = 'red';
+        qualityLabel4.style.color = 'black';
+      } else {
+        qualityLabel1.style.color = 'black';
+        qualityLabel2.style.color = 'black';
+        qualityLabel3.style.color = 'black';
+        qualityLabel4.style.color = 'red';
+      }
     };
 
     fileInput.onchange = e => {
@@ -191,10 +216,8 @@
         originalDataURL = evt.target.result;
         originalImage = new Image();
         originalImage.onload = () => {
-          // Tampilkan preview asli hanya setelah kompresi
           previewSection.style.display = 'none';
           downloadBtn.style.display = 'none';
-          alert.style.display = 'none';
         };
         originalImage.src = originalDataURL;
       };
@@ -203,10 +226,9 @@
 
     compressBtn.onclick = () => {
       if (!originalImage) {
-        alert.style.display = 'block';
+        showAlert('Silahkan masukkan gambar terlebih dahulu');
         return;
       }
-
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       canvas.width = originalImage.width;
@@ -215,20 +237,18 @@
 
       let q = parseFloat(qualityRange.value);
       let dataUrl = canvas.toDataURL('image/jpeg', q);
+      const origKB = (originalDataURL.length * 0.75) / 1024;
+      let compKB = (dataUrl.length * 0.75) / 1024;
 
-      // Custom: binary search
-      const kbTarget = parseInt(targetSizeInput.value, 10);
-      let low = 0.1, high = q, mid, sizeKb;
-      for (let i = 0; i < 8; i++) {
-        mid = (low + high) / 2;
-        dataUrl = canvas.toDataURL('image/jpeg', mid);
-        sizeKb = (dataUrl.length * 0.75) / 1024;
-        if (sizeKb > kbTarget) high = mid;
-        else low = mid;
+      // Handling auto mode compression
+      while (compKB >= origKB && q > 0.1) {
+        q -= 0.05;
+        dataUrl = canvas.toDataURL('image/jpeg', q);
+        compKB = (dataUrl.length * 0.75) / 1024;
       }
-      compressedData = canvas.toDataURL('image/jpeg', low);
+      compressedData = dataUrl;
 
-      // Tampilkan hasil sejajar
+      // Tampilkan hasil
       origImg.src = originalDataURL;
       compImg.src = compressedData;
       previewSection.style.display = 'block';
@@ -242,6 +262,17 @@
       a.download = 'compressed.jpg';
       a.click();
     };
+
+    // Show floating alert
+    function showAlert(message) {
+      const alert = document.createElement('div');
+      alert.className = 'alert alert-warning';
+      alert.innerText = message;
+      document.body.appendChild(alert);
+      setTimeout(() => {
+        alert.remove();
+      }, 3000);
+    }
   </script>
 </body>
 </html>
