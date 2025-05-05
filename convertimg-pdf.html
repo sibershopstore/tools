@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Image to PDF Converter - Siber Shop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Bootstrap & Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      background-color: #f8f9fa;
+    }
+    .navbar {
+      background-color: #212529;
+    }
+    .navbar-brand, .nav-link {
+      color: white !important;
+    }
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+    .nav-link.active {
+      font-weight: bold;
+    }
+    main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+    }
+    .tool-box {
+      background-color: white;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 800px;
+    }
+    footer {
+      background-color: #212529;
+      color: #fff;
+      text-align: center;
+      padding: 15px 20px;
+      font-size: 0.9rem;
+    }
+    #previewCanvas {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      max-width: 100%;
+      margin-top: 20px;
+    }
+    .btn {
+      width: 100%;
+      padding: 12px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">
+        <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
+          <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Section -->
+  <main>
+    <div class="container tool-box">
+      <h2 class="mb-4 text-center">🖼️ Image to PDF Converter</h2>
+
+      <div class="mb-3">
+        <label for="imageInput" class="form-label">Pilih Gambar (JPG/PNG):</label>
+        <input type="file" id="imageInput" accept="image/jpeg, image/png" class="form-control">
+      </div>
+
+      <div class="mb-3">
+        <label for="marginSelect" class="form-label">Margin:</label>
+        <select id="marginSelect" class="form-select">
+          <option value="0">Tanpa Margin</option>
+          <option value="10">Kecil</option>
+          <option value="25">Besar</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="orientationSelect" class="form-label">Orientasi Halaman:</label>
+        <select id="orientationSelect" class="form-select">
+          <option value="portrait">Potret</option>
+          <option value="landscape">Lanskap</option>
+        </select>
+      </div>
+
+      <div class="mb-3">
+        <label for="pageSizeSelect" class="form-label">Ukuran Halaman:</label>
+        <select id="pageSizeSelect" class="form-select">
+          <option value="A4">A4 (210 x 297 mm)</option>
+          <option value="Letter">US Letter (215 x 279.4 mm)</option>
+          <option value="Fit">Sesuai Ukuran Gambar</option>
+        </select>
+      </div>
+
+      <button id="convertBtn" class="btn btn-primary mt-3">Konversi ke PDF</button>
+      <a id="downloadLink" class="btn btn-success mt-2" style="display: none;" download="converted.pdf">Unduh PDF</a>
+
+      <!-- Canvas awalnya disembunyikan -->
+      <canvas id="previewCanvas" class="mt-4" style="display: none;"></canvas>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    &copy; 2025 Siber Shop Store - All Rights Reserved
+  </footer>
+
+  <!-- Bootstrap JS & jsPDF -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    const imageInput = document.getElementById('imageInput');
+    const marginSelect = document.getElementById('marginSelect');
+    const orientationSelect = document.getElementById('orientationSelect');
+    const pageSizeSelect = document.getElementById('pageSizeSelect');
+    const convertBtn = document.getElementById('convertBtn');
+    const downloadLink = document.getElementById('downloadLink');
+    const previewCanvas = document.getElementById('previewCanvas');
+    const ctx = previewCanvas.getContext('2d');
+
+    let uploadedImage = new Image();
+
+    const mmToPt = mm => mm * 2.83465;
+
+    const pageSizes = {
+      A4: { width: mmToPt(210), height: mmToPt(297) },
+      Letter: { width: mmToPt(215.9), height: mmToPt(279.4) }
+    };
+
+    imageInput.addEventListener('change', () => {
+      const file = imageInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = e => {
+        uploadedImage.onload = () => {
+          previewCanvas.style.display = 'block'; // Tampilkan canvas saat gambar sudah di-load
+          updatePreview();
+        };
+        uploadedImage.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    [marginSelect, orientationSelect, pageSizeSelect].forEach(el => {
+      el.addEventListener('change', updatePreview);
+    });
+
+    function updatePreview() {
+      if (!uploadedImage.src) return;
+
+      let pageWidth, pageHeight;
+      const margin = parseInt(marginSelect.value);
+
+      if (pageSizeSelect.value === 'Fit') {
+        pageWidth = uploadedImage.width + margin * 2;
+        pageHeight = uploadedImage.height + margin * 2;
+      } else {
+        const size = pageSizes[pageSizeSelect.value];
+        if (orientationSelect.value === 'portrait') {
+          pageWidth = size.width;
+          pageHeight = size.height;
+        } else {
+          pageWidth = size.height;
+          pageHeight = size.width;
+        }
+        pageWidth = pageWidth / 0.75; // Convert pt to px
+        pageHeight = pageHeight / 0.75;
+      }
+
+      previewCanvas.width = pageWidth;
+      previewCanvas.height = pageHeight;
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, pageWidth, pageHeight);
+      const imgWidth = pageWidth - margin * 2;
+      const imgHeight = pageHeight - margin * 2;
+      ctx.drawImage(uploadedImage, margin, margin, imgWidth, imgHeight);
+    }
+
+    convertBtn.addEventListener('click', () => {
+      if (!uploadedImage.src) {
+        alert('Silakan pilih gambar terlebih dahulu.');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const orientation = orientationSelect.value;
+      const margin = parseInt(marginSelect.value);
+      let pdfWidth, pdfHeight;
+
+      if (pageSizeSelect.value === 'Fit') {
+        pdfWidth = uploadedImage.width + margin * 2;
+        pdfHeight = uploadedImage.height + margin * 2;
+      } else {
+        const size = pageSizes[pageSizeSelect.value];
+        if (orientation === 'portrait') {
+          pdfWidth = size.width;
+          pdfHeight = size.height;
+        } else {
+          pdfWidth = size.height;
+          pdfHeight = size.width;
+        }
+      }
+
+      const pdf = new jsPDF({
+        orientation: orientation,
+        unit: 'pt',
+        format: [pdfWidth, pdfHeight]
+      });
+
+      const imgData = uploadedImage.src;
+      const imgWidth = pdfWidth - margin * 2;
+      const imgHeight = pdfHeight - margin * 2;
+
+      pdf.addImage(imgData, 'JPEG', margin, margin, imgWidth, imgHeight);
+      const pdfBlob = pdf.output('blob');
+      const url = URL.createObjectURL(pdfBlob);
+      downloadLink.href = url;
+      downloadLink.style.display = 'block';
+    });
+  </script>
+</body>
+</html>

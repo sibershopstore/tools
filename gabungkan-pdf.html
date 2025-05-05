@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gabungkan PDF - Siber Shop</title>
+  <!-- Bootstrap & Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <!-- SortableJS & pdf-lib -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Sortable/1.14.0/Sortable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    /* HEADER */
+    .navbar {
+      background-color: #212529;
+    }
+    .navbar .container {
+      padding-left: 0;
+      padding-right: 0;
+    }
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 1.5rem;
+      color: #fff !important;
+      padding-left: 1rem;
+    }
+    .nav-link {
+      color: #fff !important;
+      font-size: 1rem;
+      padding: 0.75rem 1rem;
+    }
+    .nav-link:hover, .nav-link.active {
+      font-weight: bold;
+      color: #ffc107 !important;
+    }
+    .navbar-toggler {
+      border: none;
+      margin-right: 1rem;
+    }
+    /* Upload Section */
+    .upload-section { padding: 40px 20px; background: #fff; margin-top: 20px; flex: 1; }
+    .dropzone {
+      width: 100%; height: 200px;
+      border: 2px dashed #007bff;
+      display: flex; justify-content: center; align-items: center;
+      background: #f1f1f1; cursor: pointer; margin-bottom: 20px;
+    }
+    .dropzone.dragover { background: #e9ecef; }
+    .file-list { list-style: none; padding: 0; }
+    .file-list li {
+      background: #fff; padding: 10px; margin: 5px 0;
+      border: 1px solid #ddd; border-radius: 5px;
+      display: flex; justify-content: space-between; align-items: center;
+      cursor: move;
+    }
+    .file-list li .remove { color: #dc3545; cursor: pointer; }
+    .controls { margin-top: 20px; text-align: center; }
+    .btn-upload {
+      padding: 10px 20px; background: #28a745; color: #fff;
+      border: none; cursor: pointer;
+    }
+    .btn-upload:disabled { background: #6c757d; }
+    /* Progress & Done */
+    #progressContainer { display: none; margin-top: 20px; }
+    #percentContainer, #barContainer { margin-bottom: .5rem; }
+    #doneText { display: none; margin-top: 20px; font-weight: bold; }
+    /* FOOTER */
+    footer {
+      background: #212529; color: #fff;
+      text-align: center; padding: 15px 20px;
+      font-size: .9rem; margin-top: auto;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Header -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">
+        <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
+          <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="upload-section">
+    <div class="container text-center">
+      <h2 class="mb-4">Gabungkan File PDF</h2>
+      <p>Unggah beberapa file PDF, urutkan, lalu gabungkan.</p>
+
+      <input type="file" id="fileInput" accept="application/pdf" multiple hidden>
+      <div class="dropzone" id="dropzone"><p>Klik atau seret file PDF ke sini</p></div>
+      <ul id="fileList" class="file-list"></ul>
+      <div class="controls">
+        <button class="btn-upload" id="mergeButton" disabled>Gabungkan PDF</button>
+      </div>
+
+      <div id="progressContainer">
+        <div id="percentContainer">Menggabungkan... <span id="percentText">0%</span></div>
+        <div id="barContainer" class="progress">
+          <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated"
+               role="progressbar" style="width: 0%"></div>
+        </div>
+      </div>
+
+      <div id="doneText">Selesai! Silakan unduh.</div>
+      <div class="mt-3">
+        <a id="downloadBtn" class="btn btn-primary" href="#" download="merged.pdf" style="display:none">
+          <i class="fa fa-download me-1"></i>Download PDF
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    &copy; 2025 Siber Shop Store - All Rights Reserved
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    const { PDFDocument } = PDFLib;
+    const dropzone      = document.getElementById('dropzone');
+    const fileInput     = document.getElementById('fileInput');
+    const mergeButton   = document.getElementById('mergeButton');
+    const fileList      = document.getElementById('fileList');
+    const progressCtr   = document.getElementById('progressContainer');
+    const percentCtr    = document.getElementById('percentContainer');
+    const barCtr        = document.getElementById('barContainer');
+    const progressBar   = document.getElementById('progressBar');
+    const percentText   = document.getElementById('percentText');
+    const doneText      = document.getElementById('doneText');
+    const downloadBtn   = document.getElementById('downloadBtn');
+    let files = [];
+
+    // open file picker
+    dropzone.addEventListener('click', () => fileInput.click());
+    dropzone.addEventListener('dragover', e => { e.preventDefault(); dropzone.classList.add('dragover'); });
+    dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+    dropzone.addEventListener('drop', e => { e.preventDefault(); dropzone.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+    fileInput.addEventListener('change', () => handleFiles(fileInput.files));
+
+    function handleFiles(selected) {
+      Array.from(selected).forEach(file => {
+        if (file.type === 'application/pdf' && !files.includes(file)) {
+          files.push(file);
+          fileList.appendChild(createItem(file));
+        }
+      });
+      mergeButton.disabled = !files.length;
+      new Sortable(fileList, { animation:150, onEnd:updateOrder });
+    }
+
+    function createItem(file) {
+      const li = document.createElement('li');
+      li.textContent = file.name;
+      const rm = document.createElement('span');
+      rm.textContent = '❌'; rm.classList.add('remove');
+      rm.onclick = () => { files = files.filter(f=>f!==file); li.remove(); mergeButton.disabled = !files.length; };
+      li.appendChild(rm);
+      return li;
+    }
+
+    function updateOrder() {
+      const ordered = Array.from(fileList.children)
+        .map(li => files.find(f=>f.name===li.firstChild.textContent.trim()))
+        .filter(f=>f);
+      files = ordered;
+    }
+
+    mergeButton.onclick = async () => {
+      // sembunyikan area upload dan list
+      dropzone.style.display = 'none';
+      fileList.style.display = 'none';
+      mergeButton.style.display = 'none';
+
+      progressCtr.style.display = 'block';
+      // animate 1→100% tiap 20ms
+      let prog=0;
+      const animate = () => {
+        prog++;
+        progressBar.style.width = prog+'%';
+        percentText.textContent = prog+'%';
+        if (prog<100) setTimeout(animate,20);
+      };
+      animate();
+
+      // merge di background
+      const mergedPdf = await PDFDocument.create();
+      for (const f of files) {
+        const buf = await f.arrayBuffer();
+        const pdf = await PDFDocument.load(buf);
+        const pages = await mergedPdf.copyPages(pdf, pdf.getPageIndices());
+        pages.forEach(p=>mergedPdf.addPage(p));
+      }
+      const bytes = await mergedPdf.save();
+
+      // setelah merge selesai dan animasi capai 100%
+      const checkDone = () => {
+        if (prog>=100) {
+          percentCtr.style.display = 'none';
+          barCtr.style.display     = 'none';
+          doneText.style.display   = 'block';
+          const blob = new Blob([bytes], { type:'application/pdf' });
+          downloadBtn.href = URL.createObjectURL(blob);
+          downloadBtn.style.display = 'inline-block';
+        } else {
+          setTimeout(checkDone,20);
+        }
+      };
+      checkDone();
+    };
+  </script>
+</body>
+</html>
