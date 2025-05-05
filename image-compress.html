@@ -21,6 +21,9 @@
     }
     .navbar .container { padding: 0; }
     .navbar-brand { font-weight: bold; font-size: 1.5rem; color: #fff !important; padding-left: 1rem; }
+    .navbar-toggler {
+      margin-left: -1rem; /* Perbaiki posisi tombol garis tiga */
+    }
     .nav-link { color: #fff !important; font-size: 1rem; padding: .75rem 1rem; }
     .nav-link:hover, .nav-link.active { color: #ffc107 !important; font-weight: bold; }
     /* FOOTER */
@@ -65,6 +68,11 @@
       border: 1px solid #dee2e6;
       border-radius: 5px;
     }
+    /* Notifikasi */
+    .alert {
+      display: none;
+      margin-top: 1rem;
+    }
   </style>
 </head>
 <body>
@@ -103,8 +111,13 @@
       <label for="imageInput">Pilih Gambar:</label>
       <input type="file" id="imageInput" accept="image/*" class="form-control" />
 
-      <label for="qualityRange">Kualitas (0.1–1): <span id="qualityValue">0.9</span></label>
-      <input type="range" id="qualityRange" min="0.1" max="1" step="0.05" value="0.9" class="form-range" />
+      <label for="qualityRange">Kualitas:</label>
+      <select id="qualityRange" class="form-select">
+        <option value="0.1">Buruk</option>
+        <option value="0.3">Kurang Bagus</option>
+        <option value="0.6">Bagus</option>
+        <option value="0.9">Sangat Bagus</option>
+      </select>
 
       <div id="customOptions">
         <label for="targetSize">Ukuran target (KB):</label>
@@ -112,7 +125,11 @@
       </div>
 
       <button id="compressBtn" class="btn mt-3">Kompres</button>
-      <button id="downloadBtn" class="btn mt-2">Unduh</button>
+      <button id="downloadBtn" class="btn mt-2" style="display: none;">Unduh</button>
+
+      <div id="alert" class="alert alert-danger" role="alert">
+        Silakan masukkan gambar terlebih dahulu!
+      </div>
 
       <div id="previewSection">
         <div class="preview-box">
@@ -148,6 +165,7 @@
     const compressBtn     = document.getElementById('compressBtn');
     const downloadBtn     = document.getElementById('downloadBtn');
     const previewSection  = document.getElementById('previewSection');
+    const alert           = document.getElementById('alert');
 
     let originalImage = null;
     let originalDataURL = '';
@@ -156,17 +174,13 @@
     // Inisialisasi
     customOptions.style.display = 'none';
     downloadBtn.style.display = 'none';
+    alert.style.display = 'none';
 
     modeSelect.onchange = () => {
       customOptions.style.display = modeSelect.value === 'custom' ? 'block' : 'none';
       previewSection.style.display = 'none';
       downloadBtn.style.display = 'none';
-    };
-
-    qualityRange.oninput = () => {
-      qualityValue.textContent = qualityRange.value;
-      previewSection.style.display = 'none';
-      downloadBtn.style.display = 'none';
+      alert.style.display = 'none';
     };
 
     fileInput.onchange = e => {
@@ -180,6 +194,7 @@
           // Tampilkan preview asli hanya setelah kompresi
           previewSection.style.display = 'none';
           downloadBtn.style.display = 'none';
+          alert.style.display = 'none';
         };
         originalImage.src = originalDataURL;
       };
@@ -187,38 +202,31 @@
     };
 
     compressBtn.onclick = () => {
-      if (!originalImage) return;
+      if (!originalImage) {
+        alert.style.display = 'block';
+        return;
+      }
+
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
       canvas.width = originalImage.width;
       canvas.height = originalImage.height;
       ctx.drawImage(originalImage, 0, 0);
 
-      if (modeSelect.value === 'auto') {
-        // Otomatis: turunkan kualitas sampai < asli
-        let q = parseFloat(qualityRange.value);
-        let dataUrl = canvas.toDataURL('image/jpeg', q);
-        const origKB = (originalDataURL.length * 0.75) / 1024;
-        let compKB = (dataUrl.length * 0.75) / 1024;
-        while (compKB >= origKB && q > 0.1) {
-          q -= 0.05;
-          dataUrl = canvas.toDataURL('image/jpeg', q);
-          compKB = (dataUrl.length * 0.75) / 1024;
-        }
-        compressedData = dataUrl;
-      } else {
-        // Custom: binary search
-        const kbTarget = parseInt(targetSizeInput.value, 10);
-        let low = 0.1, high = parseFloat(qualityRange.value), mid, dataUrl, sizeKb;
-        for (let i = 0; i < 8; i++) {
-          mid = (low + high) / 2;
-          dataUrl = canvas.toDataURL('image/jpeg', mid);
-          sizeKb = (dataUrl.length * 0.75) / 1024;
-          if (sizeKb > kbTarget) high = mid;
-          else low = mid;
-        }
-        compressedData = canvas.toDataURL('image/jpeg', low);
+      let q = parseFloat(qualityRange.value);
+      let dataUrl = canvas.toDataURL('image/jpeg', q);
+
+      // Custom: binary search
+      const kbTarget = parseInt(targetSizeInput.value, 10);
+      let low = 0.1, high = q, mid, sizeKb;
+      for (let i = 0; i < 8; i++) {
+        mid = (low + high) / 2;
+        dataUrl = canvas.toDataURL('image/jpeg', mid);
+        sizeKb = (dataUrl.length * 0.75) / 1024;
+        if (sizeKb > kbTarget) high = mid;
+        else low = mid;
       }
+      compressedData = canvas.toDataURL('image/jpeg', low);
 
       // Tampilkan hasil sejajar
       origImg.src = originalDataURL;
