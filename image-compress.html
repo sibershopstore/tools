@@ -115,12 +115,13 @@
       <input type="file" id="imageInput" accept="image/*" class="form-control" />
 
       <label for="qualityRange">Kualitas:</label>
-      <input type="range" id="qualityRange" min="0.1" max="1" step="0.05" value="0.9" class="form-range" />
+      <input type="range" id="qualityRange" min="1" max="100" step="1" value="90" class="form-range" />
       <div id="qualityLabels">
-        <span id="qualityLabel1">Buruk</span>
-        <span id="qualityLabel2">Kurang Bagus</span>
-        <span id="qualityLabel3">Bagus</span>
-        <span id="qualityLabel4">Sangat Bagus</span>
+        <span id="qualityLabel1">1%</span>
+        <span id="qualityLabel2">25%</span>
+        <span id="qualityLabel3">50%</span>
+        <span id="qualityLabel4">75%</span>
+        <span id="qualityLabel5">100%</span>
       </div>
 
       <div id="customOptions">
@@ -162,6 +163,7 @@
     const qualityLabel2   = document.getElementById('qualityLabel2');
     const qualityLabel3   = document.getElementById('qualityLabel3');
     const qualityLabel4   = document.getElementById('qualityLabel4');
+    const qualityLabel5   = document.getElementById('qualityLabel5');
     const targetSizeInput = document.getElementById('targetSize');
     const origImg         = document.getElementById('originalPreview');
     const compImg         = document.getElementById('compressedPreview');
@@ -185,26 +187,30 @@
 
     qualityRange.oninput = () => {
       let value = qualityRange.value;
-      if (value <= 0.25) {
+      if (value <= 25) {
         qualityLabel1.style.color = 'red';
         qualityLabel2.style.color = 'black';
         qualityLabel3.style.color = 'black';
         qualityLabel4.style.color = 'black';
-      } else if (value <= 0.5) {
+        qualityLabel5.style.color = 'black';
+      } else if (value <= 50) {
         qualityLabel1.style.color = 'black';
         qualityLabel2.style.color = 'red';
         qualityLabel3.style.color = 'black';
         qualityLabel4.style.color = 'black';
-      } else if (value <= 0.75) {
+        qualityLabel5.style.color = 'black';
+      } else if (value <= 75) {
         qualityLabel1.style.color = 'black';
         qualityLabel2.style.color = 'black';
         qualityLabel3.style.color = 'red';
         qualityLabel4.style.color = 'black';
+        qualityLabel5.style.color = 'black';
       } else {
         qualityLabel1.style.color = 'black';
         qualityLabel2.style.color = 'black';
         qualityLabel3.style.color = 'black';
         qualityLabel4.style.color = 'red';
+        qualityLabel5.style.color = 'black';
       }
     };
 
@@ -235,7 +241,7 @@
       canvas.height = originalImage.height;
       ctx.drawImage(originalImage, 0, 0);
 
-      let q = parseFloat(qualityRange.value);
+      let q = parseFloat(qualityRange.value) / 100;
       let dataUrl = canvas.toDataURL('image/jpeg', q);
       const origKB = (originalDataURL.length * 0.75) / 1024;
       let compKB = (dataUrl.length * 0.75) / 1024;
@@ -257,22 +263,21 @@
 
     downloadBtn.onclick = () => {
       if (!compressedData) return;
-      const a = document.createElement('a');
-      a.href = compressedData;
-      a.download = 'compressed.jpg';
-      a.click();
+      const link = document.createElement('a');
+      link.href = compressedData;
+      link.download = 'compressed-image.jpg';
+      link.click();
     };
 
     // Show floating alert
     function showAlert(message) {
-      const alert = document.createElement('div');
-      alert.className = 'alert alert-warning';
-      alert.innerText = message;
-      document.body.appendChild(alert);
-      setTimeout(() => {
-        alert.remove();
-      }, 3000);
+      const alertDiv = document.createElement('div');
+      alertDiv.classList.add('alert', 'alert-warning');
+      alertDiv.innerText = message;
+      document.body.appendChild(alertDiv);
+      setTimeout(() => alertDiv.remove(), 3000);
     }
   </script>
+
 </body>
 </html>
