@@ -1,35 +1,52 @@
-const fetch = require('node-fetch'); // Pastikan untuk menginstal fetch untuk node.js jika belum
+const fetch = require('node-fetch');
 
-exports.handler = async (event, context) => {
-  const API_KEY = process.env.API_KEY; // Ambil API Key dari variabel lingkungan
-  const url = JSON.parse(event.body).url; // Ambil URL dari body request
-  
-  const apiUrl = `https://urlscan.io/api/v1/scan/`;
-  
+exports.handler = async (event) => {
+  if (event.httpMethod !== 'POST') {
+    return {
+      statusCode: 405,
+      body: JSON.stringify({ error: 'Method Not Allowed' }),
+    };
+  }
+
   try {
-    const response = await fetch(apiUrl, {
+    const { url } = JSON.parse(event.body);
+
+    if (!url) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ error: 'URL tidak ditemukan dalam permintaan.' }),
+      };
+    }
+
+    const response = await fetch('https://urlscan.io/api/v1/scan/', {
       method: 'POST',
       headers: {
-        'API-Key': API_KEY, // Gunakan API key dari variabel lingkungan
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'API-Key': process.env.URLSCAN_API_KEY,
       },
-      body: JSON.stringify({ url })
+      body: JSON.stringify({
+        url: url,
+        visibility: 'public'
+      })
     });
 
-    const data = await response.json();
-
-    if (response.ok) {
+    if (!response.ok) {
+      const errText = await response.text();
       return {
-        statusCode: 200,
-        body: JSON.stringify({ result: `https://urlscan.io/result/${data.uuid}/` })
+        statusCode: response.status,
+        body: JSON.stringify({ error: 'Gagal melakukan scan', detail: errText }),
       };
-    } else {
-      throw new Error(data.error || 'Gagal melakukan scan');
     }
+
+    const data = await response.json();
+    return {
+      statusCode: 200,
+      body: JSON.stringify(data),
+    };
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: error.message })
+      body: JSON.stringify({ error: 'Server error', detail: error.message }),
     };
   }
 };
