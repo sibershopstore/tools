@@ -9,12 +9,20 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
     body { background:#f8f9fa; display:flex; flex-direction:column; min-height:100vh; font-family:'Poppins',sans-serif; }
-    .navbar { background:#212529; }
-    .navbar .container { padding-left:0; padding-right:0; }
-    .navbar-brand { font-weight:bold; font-size:1.5rem; color:#fff!important; padding-left:1rem; }
-    .nav-link { color:#fff!important; padding:.75rem 1rem; }
-    .nav-link:hover, .nav-link.active { font-weight:bold; color:#ffc107!important; }
-    .navbar-toggler { border:none; margin-right:1rem; }
+   .navbar {
+      background-color: #212529;
+    }
+    .navbar-brand, .nav-link {
+      color: white !important;
+    }
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+    .nav-link.active, .nav-link:hover {
+      font-weight: bold;
+      color: #ffc107 !important;
+    }
     footer { background:#212529; color:#fff; text-align:center; padding:15px 20px; margin-top:auto; font-size:.9rem; }
     .tool-section { flex:1; padding:60px 20px; }
     .tool-box { background:#fff; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.05); max-width:640px; margin:0 auto; padding:30px; }
