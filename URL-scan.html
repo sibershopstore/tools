@@ -1,105 +1,78 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
   <title>URL Scanner - Siber Shop</title>
-  <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Font Awesome -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
   <style>
-    html, body { height: 100%; margin: 0; padding: 0; }
-    body { display: flex; flex-direction: column; background-color: #f8f9fa; }
+    body { background-color: #f8f9fa; }
     .navbar { background-color: #212529; }
     .navbar-brand, .nav-link { color: white !important; }
-    .navbar-brand { font-weight: bold; font-size: 1.5rem; }
-    .nav-link.active { font-weight: bold; }
-    main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 40px 20px; }
-    .tool-box { background: #fff; border-radius: 10px; padding: 30px; box-shadow: 0 0 15px rgba(0,0,0,0.1); width:100%; max-width:900px; }
-    footer { background-color: #212529; color: #fff; text-align:center; padding:15px 20px; font-size:0.9rem; }
-    form { display:flex; gap:10px; margin-bottom:20px; }
-    input { flex:1; padding:10px; border:1px solid #ccc; border-radius:4px; }
-    button { padding:10px 20px; border:none; background:#007bff; color:#fff; border-radius:4px; cursor:pointer; }
-    button:hover { background:#0056b3; }
-    .result { margin-top:20px; }
-    pre { background:#272822; color:#f8f8f2; padding:15px; border-radius:4px; overflow-x:auto; }
+    .tool-box { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1); max-width: 800px; margin: 50px auto; }
+    footer { background-color: #212529; color: #fff; padding: 10px; text-align: center; }
   </style>
 </head>
 <body>
   <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
-      <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved me-2"></i>Siber Shop</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-        <ul class="navbar-nav">
+      <a class="navbar-brand" href="index.html">Siber Shop</a>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav ms-auto">
           <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
           <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
-          <li class="nav-item"><a class="nav-link active" href="about.html">Tentang Kami</a></li>
+          <li class="nav-item"><a class="nav-link active" href="#">URL Scanner</a></li>
           <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
         </ul>
       </div>
     </div>
   </nav>
-  
+
   <main>
     <div class="tool-box">
-      <h4 class="text-center mb-4">URL Scanner</h4>
+      <h4 class="mb-4 text-center">URL Scanner</h4>
       <form id="scanForm">
-        <input type="text" id="urlInput" placeholder="Masukkan URL (contoh: https://example.com)" required>
-        <button type="submit">Scan URL</button>
+        <input type="text" id="urlInput" class="form-control mb-3" placeholder="Masukkan URL lengkap" required>
+        <button type="submit" class="btn btn-primary w-100">Scan URL</button>
       </form>
-      <div id="output" class="result"></div>
+      <div id="result" class="mt-4"></div>
     </div>
   </main>
-  
+
   <footer>&copy; 2025 Siber Shop Store - All Rights Reserved</footer>
-  
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
   <script>
     document.getElementById('scanForm').addEventListener('submit', async e => {
       e.preventDefault();
-      const url = document.getElementById('urlInput').value.trim();
-      const output = document.getElementById('output');
-      
-      // Validasi URL input
-      if (!url.startsWith('http')) {
-        output.innerHTML = '<p class="text-danger">Masukkan URL lengkap dengan http:// atau https://</p>';
-        return;
-      }
-      
-      output.innerHTML = '<p>Memproses scan URL...</p>';
+      const url = document.getElementById('urlInput').value;
+      const result = document.getElementById('result');
+      result.innerHTML = "Memindai URL...";
 
       try {
-        // Gantilah dengan URL serverless function kamu di Netlify
-        const response = await fetch(`/api/scan-url?url=${encodeURIComponent(url)}`);
-        const data = await response.json();
-        
-        // Debugging log untuk memeriksa respons API
-        console.log('Response Data:', data);
+        const response = await fetch("/api/scan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ url })
+        });
 
-        if (response.ok) {
-          output.innerHTML = `
-            <h5>Hasil Scan:</h5>
-            <ul>
-              <li><strong>URL:</strong> ${data.url}</li>
-              <li><strong>Status:</strong> ${data.status}</li>
-              <li><strong>Unsafe:</strong> ${data.unsafe ? 'Ya' : 'Tidak'}</li>
-              <li><strong>Phishing:</strong> ${data.phishing ? 'Ya' : 'Tidak'}</li>
-              <li><strong>Suspicious:</strong> ${data.suspicious ? 'Ya' : 'Tidak'}</li>
-              <li><strong>Domain Rank:</strong> ${data.domain_rank}</li>
-              <li><strong>Risk Score:</strong> ${data.risk_score}</li>
-            </ul>
-          `;
+        const data = await response.json();
+
+        if (data.error) {
+          result.innerHTML = `<p class="text-danger">${data.error}</p>`;
         } else {
-          output.innerHTML = `<p class="text-danger">Error: ${data.error}</p>`;
+          result.innerHTML = `
+            <ul class="list-group">
+              <li class="list-group-item"><strong>URL:</strong> ${data.url || "Tidak tersedia"}</li>
+              <li class="list-group-item"><strong>Status:</strong> ${data.status || "Tidak tersedia"}</li>
+              <li class="list-group-item"><strong>Unsafe:</strong> ${data.unsafe ? "Ya" : "Tidak"}</li>
+              <li class="list-group-item"><strong>Phishing:</strong> ${data.phishing ? "Ya" : "Tidak"}</li>
+              <li class="list-group-item"><strong>Suspicious:</strong> ${data.suspicious ? "Ya" : "Tidak"}</li>
+              <li class="list-group-item"><strong>Domain Rank:</strong> ${data.domain_rank || "Tidak tersedia"}</li>
+              <li class="list-group-item"><strong>Risk Score:</strong> ${data.risk_score || "Tidak tersedia"}</li>
+            </ul>`;
         }
       } catch (err) {
-        // Menangani kesalahan
-        console.error('Request failed:', err);
-        output.innerHTML = `<p class="text-danger">Error: ${err.message}</p>`;
+        result.innerHTML = `<p class="text-danger">Terjadi kesalahan: ${err.message}</p>`;
       }
     });
   </script>
