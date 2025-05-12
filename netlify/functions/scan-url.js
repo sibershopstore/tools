@@ -1,50 +1,26 @@
-// netlify/functions/scan-url.js
-const fetch = require('node-fetch');
+export async function handler(event, context) {
+  const API_KEY = "0196c28c-7320-7273-be63-30900df36070";
+  const { url } = JSON.parse(event.body || '{}');
 
-exports.handler = async (event, context) => {
-  const API_KEY = process.env.API_KEY;  // API Key disimpan di variabel lingkungan
-  const url = event.queryStringParameters.url;
-  
   if (!url) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: 'URL tidak disediakan' }),
+      body: JSON.stringify({ error: "URL tidak valid" })
     };
   }
 
   try {
-    // Fetching data from the API
-    const response = await fetch(`https://api.urlscan.io/api/v1/scan/`, {
-      method: 'POST',
-      headers: {
-        'API-Key': API_KEY, // API key hanya digunakan di server
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ url: url }),
-    });
-
+    const response = await fetch(`https://ipqualityscore.com/api/json/url/${API_KEY}/${encodeURIComponent(url)}`);
     const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error('API error: ' + data.error);
-    }
 
     return {
       statusCode: 200,
-      body: JSON.stringify({
-        url: data.url,
-        status: data.status,
-        unsafe: data.unsafe,
-        phishing: data.phishing,
-        suspicious: data.suspicious,
-        domain_rank: data.domain_rank,
-        risk_score: data.risk_score,
-      }),
+      body: JSON.stringify(data)
     };
   } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: err.message }),
+      body: JSON.stringify({ error: "Gagal mengambil data" })
     };
   }
-};
+}
