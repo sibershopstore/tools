@@ -1,48 +1,50 @@
-// functions/scan-url.js
+// netlify/functions/scan-url.js
+const fetch = require('node-fetch');
 
-exports.handler = async function(event) {
-  if (event.httpMethod !== "POST") {
-    return {
-      statusCode: 405,
-      body: JSON.stringify({ error: "Metode harus POST" }),
-    };
-  }
-
-  let url;
-  try {
-    const body = JSON.parse(event.body);
-    url = body.url;
-  } catch (e) {
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ error: "Body tidak valid" }),
-    };
-  }
-
+exports.handler = async (event, context) => {
+  const API_KEY = process.env.API_KEY;  // API Key disimpan di variabel lingkungan
+  const url = event.queryStringParameters.url;
+  
   if (!url) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: "URL tidak ditemukan" }),
+      body: JSON.stringify({ error: 'URL tidak disediakan' }),
     };
   }
 
-  const API_KEY = process.env.URL_SCAN_API_KEY;
-
   try {
-    const res = await fetch(`https://ipqualityscore.com/api/json/url/${API_KEY}/${encodeURIComponent(url)}`);
-    const data = await res.json();
+    // Fetching data from the API
+    const response = await fetch(`https://api.urlscan.io/api/v1/scan/`, {
+      method: 'POST',
+      headers: {
+        'API-Key': API_KEY, // API key hanya digunakan di server
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ url: url }),
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error('API error: ' + data.error);
+    }
 
     return {
       statusCode: 200,
-      body: JSON.stringify(data),
-      headers: {
-        "Content-Type": "application/json"
-      }
+      body: JSON.stringify({
+        url: data.url,
+        status: data.status,
+        unsafe: data.unsafe,
+        phishing: data.phishing,
+        suspicious: data.suspicious,
+        domain_rank: data.domain_rank,
+        risk_score: data.risk_score,
+      }),
     };
   } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Gagal menghubungi API" }),
+      body: JSON.stringify({ error: err.message }),
     };
   }
 };
