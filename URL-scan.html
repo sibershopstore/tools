@@ -43,6 +43,7 @@
       </div>
     </div>
   </nav>
+  
   <main>
     <div class="tool-box">
       <h4 class="text-center mb-4">URL Scanner</h4>
@@ -53,22 +54,31 @@
       <div id="output" class="result"></div>
     </div>
   </main>
+  
   <footer>&copy; 2025 Siber Shop Store - All Rights Reserved</footer>
+  
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     document.getElementById('scanForm').addEventListener('submit', async e => {
       e.preventDefault();
       const url = document.getElementById('urlInput').value.trim();
       const output = document.getElementById('output');
+      
+      // Validasi URL input
       if (!url.startsWith('http')) {
         output.innerHTML = '<p class="text-danger">Masukkan URL lengkap dengan http:// atau https://</p>';
         return;
       }
+      
       output.innerHTML = '<p>Memproses scan URL...</p>';
 
       try {
+        // Gantilah dengan URL serverless function kamu di Netlify
         const response = await fetch(`/api/scan-url?url=${encodeURIComponent(url)}`);
         const data = await response.json();
+        
+        // Debugging log untuk memeriksa respons API
+        console.log('Response Data:', data);
 
         if (response.ok) {
           output.innerHTML = `
@@ -87,6 +97,8 @@
           output.innerHTML = `<p class="text-danger">Error: ${data.error}</p>`;
         }
       } catch (err) {
+        // Menangani kesalahan
+        console.error('Request failed:', err);
         output.innerHTML = `<p class="text-danger">Error: ${err.message}</p>`;
       }
     });
