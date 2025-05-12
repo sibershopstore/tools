@@ -65,31 +65,27 @@
         return;
       }
       output.innerHTML = '<p>Memproses scan URL...</p>';
+
       try {
-        const response = await fetch('/.netlify/functions/scan-url', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ url })
-        });
+        const response = await fetch(`/api/scan-url?url=${encodeURIComponent(url)}`);
         const data = await response.json();
-        if (data.error) {
+
+        if (response.ok) {
+          output.innerHTML = `
+            <h5>Hasil Scan:</h5>
+            <ul>
+              <li><strong>URL:</strong> ${data.url}</li>
+              <li><strong>Status:</strong> ${data.status}</li>
+              <li><strong>Unsafe:</strong> ${data.unsafe ? 'Ya' : 'Tidak'}</li>
+              <li><strong>Phishing:</strong> ${data.phishing ? 'Ya' : 'Tidak'}</li>
+              <li><strong>Suspicious:</strong> ${data.suspicious ? 'Ya' : 'Tidak'}</li>
+              <li><strong>Domain Rank:</strong> ${data.domain_rank}</li>
+              <li><strong>Risk Score:</strong> ${data.risk_score}</li>
+            </ul>
+          `;
+        } else {
           output.innerHTML = `<p class="text-danger">Error: ${data.error}</p>`;
-          return;
         }
-        output.innerHTML = `
-          <h5>Hasil Scan:</h5>
-          <ul>
-            <li><strong>URL:</strong> ${data.url || 'Tidak tersedia'}</li>
-            <li><strong>Status:</strong> ${data.status || 'Tidak tersedia'}</li>
-            <li><strong>Unsafe:</strong> ${data.unsafe ? 'Ya' : 'Tidak'}</li>
-            <li><strong>Phishing:</strong> ${data.phishing ? 'Ya' : 'Tidak'}</li>
-            <li><strong>Suspicious:</strong> ${data.suspicious ? 'Ya' : 'Tidak'}</li>
-            <li><strong>Domain Rank:</strong> ${data.domain_rank ?? 'Tidak tersedia'}</li>
-            <li><strong>Risk Score:</strong> ${data.risk_score ?? 'Tidak tersedia'}</li>
-          </ul>
-        `;
       } catch (err) {
         output.innerHTML = `<p class="text-danger">Error: ${err.message}</p>`;
       }
