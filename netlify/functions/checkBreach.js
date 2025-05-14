@@ -1,29 +1,25 @@
-const fetch = require("node-fetch");
-
-exports.handler = async (event) => {
+// netlify/functions/checkBreach.js
+export async function handler(event) {
   const email = event.queryStringParameters.email;
-  const apiKey = "8cb2237d0679ca88db6464eac60da96345513964"; // Ganti dengan API key Anda
+  const apiKey = process.env.LEAKCHECK_API_KEY;
 
-  if (!email) {
+  if (!email || !apiKey) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: "Email tidak boleh kosong." })
+      body: JSON.stringify({ error: "Parameter atau API Key tidak tersedia." })
     };
   }
 
-  try {
-    const response = await fetch(`https://leakcheck.io/api/v2/query/${encodeURIComponent(email)}?type=email`, {
-      headers: {
-        "X-API-Key": apiKey
-      }
-    });
+  const url = `https://leakcheck.io/api/v2?key=${apiKey}&check=${encodeURIComponent(email)}&type=email`;
 
+  try {
+    const response = await fetch(url);
     const data = await response.json();
 
     if (!data.success) {
       return {
-        statusCode: 500,
-        body: JSON.stringify({ error: data.error || "Gagal mengambil data dari LeakCheck." })
+        statusCode: 400,
+        body: JSON.stringify({ error: data.error || "Gagal memeriksa data." })
       };
     }
 
@@ -31,14 +27,14 @@ exports.handler = async (event) => {
       statusCode: 200,
       body: JSON.stringify({
         breached: data.found,
-        breaches: data.result || []
+        breaches: data.result
       })
     };
 
   } catch (error) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: "Terjadi kesalahan pada server: " + error.message })
+      body: JSON.stringify({ error: "Gagal mengambil data." })
     };
   }
-};
+}
