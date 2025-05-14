@@ -98,26 +98,23 @@
       try {
         const response = await axios.get(`https://api.xposedornot.com/v1/check-email/${email}`);
         
-        if (response.status === 200) {
-          if (response.data && response.data.breached) {
+        if (response.status === 200 && response.data.status === "success") {
+          // Periksa apakah email terlibat dalam kebocoran
+          if (response.data.breached) {
             resultDiv.innerHTML = `<div class="alert alert-danger">Email <strong>${email}</strong> telah terlibat dalam kebocoran data!</div>`;
           } else {
             resultDiv.innerHTML = `<div class="alert alert-success">Email <strong>${email}</strong> aman, tidak ada kebocoran data.</div>`;
           }
         } else {
-          // Menampilkan status error jika API gagal
-          resultDiv.innerHTML = `<div class="alert alert-warning">Kesalahan: ${response.status} - Gagal memproses permintaan.</div>`;
+          resultDiv.innerHTML = `<div class="alert alert-warning">Kesalahan: Tidak dapat memproses permintaan. Coba lagi nanti.</div>`;
         }
       } catch (error) {
         // Menampilkan error dengan rincian yang lebih jelas
         if (error.response) {
-          // Respons dari server
           resultDiv.innerHTML = `<div class="alert alert-danger">Terjadi kesalahan: ${error.response.data.message || 'Tidak dapat memeriksa email.'}</div>`;
         } else if (error.request) {
-          // Jika tidak ada respons dari server
           resultDiv.innerHTML = `<div class="alert alert-danger">Tidak ada respons dari server. Coba lagi nanti.</div>`;
         } else {
-          // Kesalahan lain yang terjadi
           resultDiv.innerHTML = `<div class="alert alert-danger">Terjadi kesalahan: ${error.message}</div>`;
         }
       }
