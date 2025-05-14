@@ -1,57 +1,47 @@
 // netlify/functions/breach.js
-const fetch = require('node-fetch');
-
+// (Node 18+ di Netlify sudah punya fetch global, jadi kita tak perlu import)
 exports.handler = async (event) => {
   const email = event.queryStringParameters.check;
   const API_URL = process.env.BREACH_API_URL || 'https://leakcheck.net/api/public';
+  const API_KEY = process.env.BREACH_API_KEY;   // ← ambil dari env var
 
   if (!email) {
     return { statusCode: 400, body: 'Parameter "check" diperlukan.' };
   }
+  if (!API_KEY) {
+    console.error('Missing BREACH_API_KEY');
+    return { statusCode: 500, body: 'Server misconfiguration: missing API key.' };
+  }
 
-  const url = `${API_URL}?check=${encodeURIComponent(email)}`;
-  const headers = {
-    'Accept': 'application/json',
-    'User-Agent': 'Mozilla/5.0 (compatible; SiberShop/1.0)' 
-  };
-
+  const url = `${API_URL}?check=${encodeURIComponent(email)}&key=${API_KEY}`;
   try {
-    const res = await fetch(url, { headers });
-
-    // Jika status bukan 2xx, baca teks error dulu
+    const res = await fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'SiberShop/1.0'
+      }
+    });
+    const text = await res.text();
     if (!res.ok) {
-      const errText = await res.text();
-      console.error(`LeakCheck API error (status ${res.status}):`, errText);
+      console.error('LeakCheck API error:', text);
       return {
         statusCode: 502,
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-          success: false,
-          error: 'LeakCheck API mengembalikan error.',
-          status: res.status,
-          detail: errText
-        })
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ success: false, error: text })
       };
     }
-
-    // Parse JSON
-    const data = await res.json();
+    const data = JSON.parse(text);
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data)
     };
-
   } catch (err) {
-    console.error('Fetch error:', err);
+    console.error('Fetch exception:', err);
     return {
       statusCode: 502,
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        success: false,
-        error: 'Gagal mengambil data LeakCheck.',
-        detail: err.message
-      })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ success: false, error: err.message })
     };
   }
 };
