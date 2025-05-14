@@ -51,39 +51,47 @@
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script>
+ <script>
     document.getElementById('checkBtn').addEventListener('click', async () => {
       const email     = document.getElementById('emailInput').value.trim();
       const resultBox = document.getElementById('resultBox');
       const loading   = document.getElementById('loading');
 
       if (!email) {
-        return alert('Silakan masukkan email.');
+        alert('Silakan masukkan email.');
+        return;
       }
-      resultBox.value = '';
       loading.style.display = 'block';
+      resultBox.value       = '';
 
       try {
         const res  = await fetch(`/.netlify/functions/breach?check=${encodeURIComponent(email)}`);
         const data = await res.json();
+        console.log('Response from function:', data);
 
-        if (res.ok && Array.isArray(data.sources)) {
-          let out = `⚠️ Email "${email}" terdeteksi dalam ${data.sources.length} kebocoran.\n\n`;
-          data.sources.forEach(src => {
-            out += `• ${src.name} — ${src.date || 'Tanggal tidak tersedia'}\n`;
-          });
-          if (data.fields?.length) {
-            out += `\n🔎 Fields yang bocor (${data.fields.length}): ${data.fields.join(', ')}\n`;
+        if (res.ok && Array.isArray(data.result)) {
+          if (data.result.length > 0) {
+            // Terdapat kebocoran
+            let out = `⚠️ Email "${email}" terdeteksi dalam ${data.found} kebocoran.\n\n`;
+            data.result.forEach(item => {
+              const src = item.source;
+              out += `• ${src.name} — ${src.breach_date || 'Tanggal tidak tersedia'}\n`;
+            });
+            if (Array.isArray(data.result[0].fields) && data.result[0].fields.length) {
+              out += `\n🔎 Fields yang bocor: ${data.result[0].fields.join(', ')}\n`;
+            }
+            resultBox.value = out;
+          } else {
+            // Tidak ditemukan
+            resultBox.value = `✅ Email "${email}" tidak ditemukan dalam database kebocoran.`;
           }
-          if (typeof data.found === 'number') {
-            out += `\n📊 Total masukan bocor: ${data.found} baris (perkiraan)`;
-          }
-          resultBox.value = out;
         } else {
-          resultBox.value = `✅ Email "${email}" tidak ditemukan dalam database kebocoran.`;
+          // Error di serverless
+          resultBox.value = `❌ Error: ${data.error || 'Tidak diketahui'}`;
+          if (data.detail) resultBox.value += `\nDetail: ${data.detail}`;
         }
       } catch (err) {
-        console.error(err);
+        console.error('Front-end exception:', err);
         resultBox.value = '❌ Gagal memeriksa data. Coba lagi nanti.';
       } finally {
         loading.style.display = 'none';
