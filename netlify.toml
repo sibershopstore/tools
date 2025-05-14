@@ -1,8 +1,9 @@
 [build]
-  functions = "functions"
-  publish = "."
+  publish = "./"
+  functions = "netlify/functions"
 
 [[redirects]]
-  from = "/api/scan"
-  to = "/.netlify/functions/scan-url"
+  from = "/email-breach"
+  to = "/email-breach/"
   status = 200
+  force = true
