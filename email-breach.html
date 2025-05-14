@@ -2,19 +2,50 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Cek Kebocoran Email - Siber Shop</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Bootstrap & FontAwesome -->
+  <title>Email Breach Checker - Siber Shop</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Bootstrap & Font Awesome -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    html, body { height:100%; margin:0; padding:0; display:flex; flex-direction:column; background:#f8f9fa; }
-    .navbar { background:#212529; }
-    .navbar-brand, .nav-link { color:#fff !important; }
-    .tool-box { background:#fff; padding:30px; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.1); max-width:700px; width:100%; }
-    #loading { display:none; margin-top:15px; color:#777; }
-    .result-box { width:100%; min-height:200px; max-height:500px; margin-top:20px; padding:15px; border:1px solid #dee2e6; border-radius:8px; background:#fdfdfd; white-space:pre-wrap; overflow-y:auto; resize:vertical; }
-    footer { background:#212529; color:#fff; text-align:center; padding:15px 20px; font-size:.9rem; }
+    body {
+      background-color: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      font-family: 'Poppins', sans-serif;
+    }
+    .navbar { background-color: #212529; }
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 1.5rem;
+      color: #fff !important;
+    }
+    .nav-link {
+      color: #fff !important;
+    }
+    .nav-link:hover, .nav-link.active {
+      font-weight: bold;
+      color: #ffc107 !important;
+    }
+    footer {
+      background-color: #212529;
+      color: #fff;
+      text-align: center;
+      padding: 15px 20px;
+      font-size: 0.9rem;
+      margin-top: auto;
+    }
+    main { flex: 1; padding: 40px 20px; }
+    .checker-section {
+      background: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    #result {
+      margin-top: 20px;
+    }
   </style>
 </head>
 <body>
@@ -22,9 +53,13 @@
   <!-- Header -->
   <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
-      <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved me-2"></i>Siber Shop</a>
-      <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
-      <div id="navbarNav" class="collapse navbar-collapse justify-content-end">
+      <a class="navbar-brand" href="index.html">
+        <i class="fa-solid fa-envelope-open-text me-2"></i>Siber Shop
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
         <ul class="navbar-nav">
           <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
           <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
@@ -36,65 +71,63 @@
   </nav>
 
   <!-- Main Content -->
-  <main class="flex-grow-1 d-flex align-items-center justify-content-center p-4">
-    <div class="tool-box">
-      <h2 class="text-center mb-4">Cek Kebocoran Email</h2>
-      <input type="email" id="emailInput" class="form-control mb-3" placeholder="contoh@example.com">
-      <button id="checkBtn" class="btn btn-danger w-100">Periksa Sekarang</button>
-      <div id="loading"><i class="fas fa-spinner fa-spin"></i> Memeriksa data...</div>
-      <textarea id="resultBox" class="result-box" readonly placeholder="Hasil akan muncul di sini..."></textarea>
+  <main class="container">
+    <div class="checker-section">
+      <h3 class="text-center mb-4">Email Breach Checker</h3>
+
+      <div class="mb-3">
+        <label for="email" class="form-label">Masukkan email Anda:</label>
+        <input type="email" class="form-control" id="email" placeholder="you@example.com" required>
+      </div>
+      <div class="d-grid">
+        <button id="checkBtn" class="btn btn-primary">Check Breaches</button>
+      </div>
+
+      <div id="result"></div>
     </div>
   </main>
 
   <!-- Footer -->
-  <footer>&copy; 2025 Siber Shop Store - All Rights Reserved</footer>
+  <footer>
+    &copy; 2025 Siber Shop Store - All Rights Reserved
+  </footer>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
- <script>
+  <script>
     document.getElementById('checkBtn').addEventListener('click', async () => {
-      const email     = document.getElementById('emailInput').value.trim();
-      const resultBox = document.getElementById('resultBox');
-      const loading   = document.getElementById('loading');
-
+      const email = document.getElementById('email').value.trim();
+      const resultDiv = document.getElementById('result');
       if (!email) {
-        alert('Silakan masukkan email.');
+        resultDiv.innerHTML = '<div class="alert alert-warning">Silakan masukkan email.</div>';
         return;
       }
-      loading.style.display = 'block';
-      resultBox.value       = '';
+      resultDiv.innerHTML = '<div class="alert alert-info">Checking...</div>';
 
       try {
-        const res  = await fetch(`/.netlify/functions/breach?check=${encodeURIComponent(email)}`);
+        const res = await fetch(`/.netlify/functions/checkBreach?email=${encodeURIComponent(email)}`);
         const data = await res.json();
-        console.log('Response from function:', data);
 
-        if (res.ok && Array.isArray(data.result)) {
-          if (data.result.length > 0) {
-            // Terdapat kebocoran
-            let out = `⚠️ Email "${email}" terdeteksi dalam ${data.found} kebocoran.\n\n`;
-            data.result.forEach(item => {
-              const src = item.source;
-              out += `• ${src.name} — ${src.breach_date || 'Tanggal tidak tersedia'}\n`;
-            });
-            if (Array.isArray(data.result[0].fields) && data.result[0].fields.length) {
-              out += `\n🔎 Fields yang bocor: ${data.result[0].fields.join(', ')}\n`;
-            }
-            resultBox.value = out;
-          } else {
-            // Tidak ditemukan
-            resultBox.value = `✅ Email "${email}" tidak ditemukan dalam database kebocoran.`;
-          }
+        if (!res.ok) throw new Error(data.error || 'Error checking breaches');
+
+        if (data.breached) {
+          let html = '<div class="alert alert-danger"><strong>Breaches ditemukan:</strong></div>';
+          html += '<ul class="list-group">';
+          data.breaches.forEach(b => {
+            html += `
+              <li class="list-group-item">
+                <h6>${b.Title} <small class="text-muted">(${b.BreachDate})</small></h6>
+                <p class="mb-0">${b.Description}</p>
+              </li>
+            `;
+          });
+          html += '</ul>';
+          resultDiv.innerHTML = html;
         } else {
-          // Error di serverless
-          resultBox.value = `❌ Error: ${data.error || 'Tidak diketahui'}`;
-          if (data.detail) resultBox.value += `\nDetail: ${data.detail}`;
+          resultDiv.innerHTML = '<div class="alert alert-success">Tidak ada breach untuk email ini.</div>';
         }
       } catch (err) {
-        console.error('Front-end exception:', err);
-        resultBox.value = '❌ Gagal memeriksa data. Coba lagi nanti.';
-      } finally {
-        loading.style.display = 'none';
+        resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${err.message}</div>`;
       }
     });
   </script>
