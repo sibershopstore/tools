@@ -1,68 +1,71 @@
-// Jika Node <18 gunakan: const fetch = require('node-fetch').default;
-// Di Netlify biasanya sudah support fetch global di Node 18+.
+import fetch from 'node-fetch'
 
-exports.handler = async (event) => {
-  const email   = event.queryStringParameters.check;
-  const API_URL = process.env.LEAKCHECK_API_URL;   // e.g. https://leakcheck.io
-  const API_KEY = process.env.LEAKCHECK_API_KEY;   // → X-API-Key header
-
-  // 1) Validasi
+export async function handler(event) {
+  const { email } = event.queryStringParameters
   if (!email) {
-    return { statusCode: 400, body: 'Parameter "check" diperlukan.' };
+    return {
+      statusCode: 400,
+      body: JSON.stringify({ error: 'Email is required' })
+    }
   }
-  if (!API_URL || !API_KEY) {
-    console.error('Missing LEAKCHECK_API_URL or LEAKCHECK_API_KEY');
+
+  const apiKey = process.env.LEAKCHECK_API_KEY
+  if (!apiKey) {
     return {
       statusCode: 500,
-      body: 'Server misconfiguration: missing API URL or API key.'
-    };
+      body: JSON.stringify({ error: 'Missing LeakCheck API key' })
+    }
   }
 
-  // 2) Bangun URL & headers
-  const url = `${API_URL}/api/v2/query/${encodeURIComponent(email)}`;
-  const headers = {
-    'Accept':       'application/json',
-    'X-API-Key':    API_KEY,
-    'User-Agent':   'SiberShop/1.0'
-  };
-
+  const url = `https://leakcheck.io/api/v2/query/${encodeURIComponent(email)}`
   try {
-    const resRaw = await fetch(url, { headers });
-    const text   = await resRaw.text();
-    console.log('LeakCheck v2 status:', resRaw.status);
-    console.log('LeakCheck v2 raw:', text);
+    const res = await fetch(url, {
+      headers: {
+        'Accept': 'application/json',
+        'X-API-Key': apiKey
+      }
+    })
 
-    if (!resRaw.ok) {
-      // Kirim detail ke log & client (sementara untuk debug)
+    if (!res.ok) {
+      const text = await res.text()
       return {
-        statusCode: 502,
-        headers:     { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          success: false,
-          error:   `LeakCheck API error (status ${resRaw.status})`,
-          detail:  text
-        })
-      };
+        statusCode: res.status,
+        body: JSON.stringify({ error: text })
+      }
     }
 
-    // Parse JSON
-    const data = JSON.parse(text);
+    const data = await res.json()
 
-    // data looks like:
-    // { success: true, found: X, quota: Y, result: [ { email, source: {...}, first_name, ... }, ... ] }
+    if (!data.success) {
+      return {
+        statusCode: 500,
+        body: JSON.stringify({ error: 'LeakCheck API returned unsuccessful response' })
+      }
+    }
+
+    // Jika tidak ada breach
+    if (data.found === 0) {
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ breached: false, breaches: [] })
+      }
+    }
+
+    // Map ke format seragam
+    const formatted = data.result.map(b => ({
+      Title: b.source.name,
+      BreachDate: b.source.breach_date,
+      Description: `Fields exposed: ${b.fields.join(', ')}`
+    }))
 
     return {
       statusCode: 200,
-      headers:     { 'Content-Type': 'application/json' },
-      body:        JSON.stringify(data)
-    };
-
+      body: JSON.stringify({ breached: true, breaches: formatted })
+    }
   } catch (err) {
-    console.error('Fetch exception:', err);
     return {
-      statusCode: 502,
-      headers:     { 'Content-Type': 'application/json' },
-      body:        JSON.stringify({ success: false, error: err.message })
-    };
+      statusCode: 500,
+      body: JSON.stringify({ error: err.message })
+    }
   }
-};
+}
