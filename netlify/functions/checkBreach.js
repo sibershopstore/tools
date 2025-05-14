@@ -1,66 +1,42 @@
-import fetch from 'node-fetch';
+const fetch = require('node-fetch');
 
-export async function handler(event) {
+exports.handler = async (event) => {
   const { email } = event.queryStringParameters;
+  const apiKey = "8cb2237d0679ca88db6464eac60da96345513964";
+
   if (!email) {
     return {
       statusCode: 400,
-      body: JSON.stringify({ error: 'Email is required' })
+      body: JSON.stringify({ error: "Email tidak boleh kosong." })
     };
   }
 
-  // Gunakan API key yang sudah kamu berikan
- const apiKey = process.env.LEAKCHECK_API_KEY;
-
-  const url = `https://leakcheck.io/api/v2/query/${encodeURIComponent(email)}`;
   try {
-    const res = await fetch(url, {
-      headers: {
-        'Accept': 'application/json',
-        'X-API-Key': apiKey
-      }
+    const res = await fetch(`https://leakcheck.io/api/v2/public/email/${encodeURIComponent(email)}`, {
+      headers: { "X-API-Key": apiKey }
     });
-
-    if (!res.ok) {
-      const text = await res.text();
-      return {
-        statusCode: res.status,
-        body: JSON.stringify({ error: text })
-      };
-    }
 
     const data = await res.json();
 
     if (!data.success) {
       return {
         statusCode: 500,
-        body: JSON.stringify({ error: 'LeakCheck API returned unsuccessful response' })
+        body: JSON.stringify({ error: data.message || "Gagal mengambil data." })
       };
     }
-
-    // Jika tidak ada breach
-    if (data.found === 0) {
-      return {
-        statusCode: 200,
-        body: JSON.stringify({ breached: false, breaches: [] })
-      };
-    }
-
-    // Map ke format seragam
-    const formatted = data.result.map(b => ({
-      Title: b.source.name,
-      BreachDate: b.source.breach_date,
-      Description: `Fields exposed: ${b.fields.join(', ')}`
-    }));
 
     return {
       statusCode: 200,
-      body: JSON.stringify({ breached: true, breaches: formatted })
+      body: JSON.stringify({
+        breached: data.found,
+        breaches: data.sources || []
+      })
     };
+
   } catch (err) {
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: err.message })
+      body: JSON.stringify({ error: "Server error: " + err.message })
     };
   }
-}
+};
