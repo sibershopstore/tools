@@ -96,14 +96,20 @@
       resultDiv.innerHTML = ''; // Clear previous results
 
       try {
-        const response = await axios.get(`https://api.xposedornot.com/v1/check-email/${email}`);
+        const response = await axios.get(`https://leakcheck.net/api/public?check=${email}`);
         
-        if (response.status === 200 && response.data.status === "success") {
+        if (response.status === 200) {
+          const data = response.data;
+          
           // Periksa apakah email terlibat dalam kebocoran
-          if (response.data.breached) {
-            resultDiv.innerHTML = `<div class="alert alert-danger">Email <strong>${email}</strong> telah terlibat dalam kebocoran data!</div>`;
+          if (data.status === 'success' && data.result) {
+            if (data.result.breached) {
+              resultDiv.innerHTML = `<div class="alert alert-danger">Email <strong>${email}</strong> telah terlibat dalam kebocoran data!</div>`;
+            } else {
+              resultDiv.innerHTML = `<div class="alert alert-success">Email <strong>${email}</strong> aman, tidak ada kebocoran data.</div>`;
+            }
           } else {
-            resultDiv.innerHTML = `<div class="alert alert-success">Email <strong>${email}</strong> aman, tidak ada kebocoran data.</div>`;
+            resultDiv.innerHTML = `<div class="alert alert-warning">Email <strong>${email}</strong> tidak dapat diproses. Coba lagi nanti.</div>`;
           }
         } else {
           resultDiv.innerHTML = `<div class="alert alert-warning">Kesalahan: Tidak dapat memproses permintaan. Coba lagi nanti.</div>`;
