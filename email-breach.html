@@ -8,47 +8,22 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
-    html, body {
-      height: 100%; margin: 0; padding: 0;
-      display: flex; flex-direction: column;
-      background-color: #f8f9fa;
-    }
-    .navbar { background-color: #212529; }
-    .navbar-brand, .nav-link { color: white !important; }
-    .navbar-brand { font-weight: bold; font-size: 1.5rem; }
-    .nav-link.active { font-weight: bold; }
-    main {
-      flex: 1; display: flex; align-items: center; justify-content: center;
-      padding: 40px 20px;
-    }
-    .tool-box {
-      background: #fff; padding: 30px; border-radius: 10px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.1);
-      max-width: 700px; width: 100%;
-    }
-    #loading { display: none; margin-top: 15px; color: #777; }
-    .result-box {
-      width: 100%; min-height: 200px; max-height: 500px;
-      margin-top: 20px; padding: 15px;
-      border: 1px solid #dee2e6; border-radius: 8px;
-      background: #fdfdfd; white-space: pre-wrap;
-      overflow-y: auto; resize: vertical;
-    }
-    footer {
-      background-color: #212529; color: #fff;
-      text-align: center; padding: 15px 20px; font-size: 0.9rem;
-    }
+    html, body { height:100%; margin:0; padding:0; display:flex; flex-direction:column; background:#f8f9fa; }
+    .navbar { background:#212529; }
+    .navbar-brand, .nav-link { color:#fff !important; }
+    .tool-box { background:#fff; padding:30px; border-radius:10px; box-shadow:0 0 15px rgba(0,0,0,0.1); max-width:700px; width:100%; }
+    #loading { display:none; margin-top:15px; color:#777; }
+    .result-box { width:100%; min-height:200px; max-height:500px; margin-top:20px; padding:15px; border:1px solid #dee2e6; border-radius:8px; background:#fdfdfd; white-space:pre-wrap; overflow-y:auto; resize:vertical; }
+    footer { background:#212529; color:#fff; text-align:center; padding:15px 20px; font-size:.9rem; }
   </style>
 </head>
 <body>
 
-  <!-- Header (sama dengan Kebijakan Privasi) -->
+  <!-- Header -->
   <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
       <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved me-2"></i>Siber Shop</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
+      <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#navbarNav"><span class="navbar-toggler-icon"></span></button>
       <div id="navbarNav" class="collapse navbar-collapse justify-content-end">
         <ul class="navbar-nav">
           <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
@@ -61,7 +36,7 @@
   </nav>
 
   <!-- Main Content -->
-  <main>
+  <main class="flex-grow-1 d-flex align-items-center justify-content-center p-4">
     <div class="tool-box">
       <h2 class="text-center mb-4">Cek Kebocoran Email</h2>
       <input type="email" id="emailInput" class="form-control mb-3" placeholder="contoh@example.com">
@@ -71,55 +46,49 @@
     </div>
   </main>
 
-  <!-- Footer (sama dengan Kebijakan Privasi) -->
-  <footer>
-    &copy; 2025 Siber Shop Store - All Rights Reserved
-  </footer>
+  <!-- Footer -->
+  <footer>&copy; 2025 Siber Shop Store - All Rights Reserved</footer>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
- <script>
-document.getElementById('checkBtn').addEventListener('click', async () => {
-  const email = document.getElementById('emailInput').value.trim();
-  const resultBox = document.getElementById('resultBox');
-  const loading = document.getElementById('loading');
+  <script>
+    document.getElementById('checkBtn').addEventListener('click', async () => {
+      const email     = document.getElementById('emailInput').value.trim();
+      const resultBox = document.getElementById('resultBox');
+      const loading   = document.getElementById('loading');
 
-  if (!email) {
-    alert('Silakan masukkan email.');
-    return;
-  }
-
-  resultBox.value = '';
-  loading.style.display = 'block';
-
-  try {
-    const res = await fetch(`/.netlify/functions/breach?check=${encodeURIComponent(email)}`);
-    if (!res.ok) throw new Error(res.status);
-    const data = await res.json();
-
-    if (data.success) {
-      let out = `⚠️ Email "${email}" terdeteksi dalam ${data.sources.length} kebocoran.\n\n`;
-      data.sources.forEach(src => {
-        out += `• ${src.name} — ${src.date || 'Tanggal tidak tersedia'}\n`;
-      });
-      if (Array.isArray(data.fields) && data.fields.length) {
-        out += `\n🔎 Fields yang bocor (${data.fields.length}): ${data.fields.join(', ')}\n`;
+      if (!email) {
+        return alert('Silakan masukkan email.');
       }
-      if (typeof data.found === 'number') {
-        out += `\n📊 Total masukan bocor: ${data.found} baris (perkiraan)`;
-      }
-      resultBox.value = out;
-    } else {
-      resultBox.value = `✅ Email "${email}" tidak ditemukan dalam database kebocoran.`;
-    }
-  } catch (err) {
-    console.error(err);
-    resultBox.value = '❌ Gagal memeriksa data. Coba lagi nanti.';
-  } finally {
-    loading.style.display = 'none';
-  }
-});
-</script>
+      resultBox.value = '';
+      loading.style.display = 'block';
 
+      try {
+        const res  = await fetch(`/.netlify/functions/breach?check=${encodeURIComponent(email)}`);
+        const data = await res.json();
+
+        if (res.ok && Array.isArray(data.sources)) {
+          let out = `⚠️ Email "${email}" terdeteksi dalam ${data.sources.length} kebocoran.\n\n`;
+          data.sources.forEach(src => {
+            out += `• ${src.name} — ${src.date || 'Tanggal tidak tersedia'}\n`;
+          });
+          if (data.fields?.length) {
+            out += `\n🔎 Fields yang bocor (${data.fields.length}): ${data.fields.join(', ')}\n`;
+          }
+          if (typeof data.found === 'number') {
+            out += `\n📊 Total masukan bocor: ${data.found} baris (perkiraan)`;
+          }
+          resultBox.value = out;
+        } else {
+          resultBox.value = `✅ Email "${email}" tidak ditemukan dalam database kebocoran.`;
+        }
+      } catch (err) {
+        console.error(err);
+        resultBox.value = '❌ Gagal memeriksa data. Coba lagi nanti.';
+      } finally {
+        loading.style.display = 'none';
+      }
+    });
+  </script>
 </body>
 </html>
