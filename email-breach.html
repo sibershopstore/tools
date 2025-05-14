@@ -2,30 +2,24 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Email Breach Checker - Siber Shop</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Bootstrap & Font Awesome -->
+  <title>Cek Kebocoran Email - Siber Shop</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
   <style>
     body {
       background-color: #f8f9fa;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
       font-family: 'Poppins', sans-serif;
     }
     .navbar { background-color: #212529; }
     .navbar-brand {
       font-weight: bold;
-      font-size: 1.5rem;
       color: #fff !important;
     }
     .nav-link {
       color: #fff !important;
     }
-    .nav-link:hover, .nav-link.active {
-      font-weight: bold;
+    .nav-link:hover {
       color: #ffc107 !important;
     }
     footer {
@@ -34,19 +28,9 @@
       text-align: center;
       padding: 15px 20px;
       font-size: 0.9rem;
-      margin-top: auto;
     }
     main {
-      flex: 1;
       padding: 40px 20px;
-    }
-    .breach-section {
-      background: #fff;
-      border-radius: 10px;
-      padding: 30px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      max-width: 700px;
-      margin: auto;
     }
     .alert {
       margin-top: 20px;
@@ -58,18 +42,24 @@
   <!-- Header -->
   <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
-      <a class="navbar-brand" href="index.html">
-        <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
-      </a>
+      <a class="navbar-brand" href="#">Siber Shop</a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
-      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
-        <ul class="navbar-nav">
-          <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
-          <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
-          <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
-          <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="index.html">Beranda</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="kontak.html">Kontak</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="about.html">Tentang Kami</a>
+          </li>
         </ul>
       </div>
     </div>
@@ -77,19 +67,16 @@
 
   <!-- Main Content -->
   <main class="container">
-    <div class="breach-section">
-      <h3 class="text-center mb-4">Cek Email Breach</h3>
-      <p class="text-muted text-center">Masukkan email Anda untuk memeriksa apakah pernah bocor dalam insiden keamanan data publik.</p>
-      <form id="breachForm">
-        <div class="mb-3">
-          <input type="email" class="form-control" id="emailInput" placeholder="contoh@email.com" required>
-        </div>
-        <div class="d-grid">
-          <button type="submit" class="btn btn-warning"><i class="fa-solid fa-search me-2"></i>Periksa Sekarang</button>
-        </div>
-      </form>
-      <div id="result" class="mt-4"></div>
-    </div>
+    <h3 class="text-center">Cek Kebocoran Email</h3>
+    <form id="emailForm">
+      <div class="mb-3">
+        <label for="emailInput" class="form-label">Masukkan Email Anda</label>
+        <input type="email" class="form-control" id="emailInput" required placeholder="email@example.com">
+      </div>
+      <button type="submit" class="btn btn-primary">Cek Email</button>
+    </form>
+    
+    <div id="result" class="mt-4"></div>
   </main>
 
   <!-- Footer -->
@@ -98,41 +85,34 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    const form = document.getElementById('breachForm');
+    const emailForm = document.getElementById('emailForm');
     const resultDiv = document.getElementById('result');
 
-    form.addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const email = document.getElementById('emailInput').value.trim();
+    emailForm.addEventListener('submit', async (event) => {
+      event.preventDefault();
 
-      if (!email) return;
-
-      resultDiv.innerHTML = '<div class="alert alert-info">Memeriksa...</div>';
+      const email = document.getElementById('emailInput').value;
+      resultDiv.innerHTML = ''; // Clear previous results
 
       try {
-        const response = await fetch(`/.netlify/functions/checkBreach?email=${encodeURIComponent(email)}`);
-        const data = await response.json();
-
-        if (data.error) {
-          resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${data.error}</div>`;
-        } else if (data.breached && data.breaches.length > 0) {
-          let html = `<div class="alert alert-warning"><strong>Ditemukan kebocoran!</strong></div>`;
-          html += '<ul class="list-group">';
-          data.breaches.forEach(breach => {
-            html += `<li class="list-group-item">${breach.line}</li>`;
-          });
-          html += '</ul>';
-          resultDiv.innerHTML = html;
+        const response = await axios.get(`https://xposedornot.com/api/v1/breach/${email}`);
+        
+        if (response.data) {
+          if (response.data.breached) {
+            resultDiv.innerHTML = `<div class="alert alert-danger">Email <strong>${email}</strong> telah terlibat dalam kebocoran data!</div>`;
+          } else {
+            resultDiv.innerHTML = `<div class="alert alert-success">Email <strong>${email}</strong> aman, tidak ada kebocoran data.</div>`;
+          }
         } else {
-          resultDiv.innerHTML = `<div class="alert alert-success">Email ini aman, tidak ditemukan dalam database kebocoran.</div>`;
+          resultDiv.innerHTML = `<div class="alert alert-warning">Data tidak ditemukan untuk email ini.</div>`;
         }
 
-      } catch (err) {
-        resultDiv.innerHTML = `<div class="alert alert-danger">Gagal memeriksa: ${err.message}</div>`;
+      } catch (error) {
+        resultDiv.innerHTML = `<div class="alert alert-danger">Terjadi kesalahan saat memeriksa email. Coba lagi nanti.</div>`;
       }
     });
   </script>
+  
 </body>
 </html>
