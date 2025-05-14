@@ -1,42 +1,33 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>Email Breach Checker - Siber Shop</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <!-- Bootstrap & Font Awesome -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet" />
-
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
   <style>
     body {
       background-color: #f8f9fa;
-      font-family: 'Poppins', sans-serif;
       display: flex;
       flex-direction: column;
       min-height: 100vh;
+      font-family: 'Poppins', sans-serif;
     }
-
-    .navbar {
-      background-color: #212529;
-    }
-
+    .navbar { background-color: #212529; }
     .navbar-brand {
       font-weight: bold;
       font-size: 1.5rem;
       color: #fff !important;
     }
-
     .nav-link {
       color: #fff !important;
     }
-
     .nav-link:hover, .nav-link.active {
       font-weight: bold;
       color: #ffc107 !important;
     }
-
     footer {
       background-color: #212529;
       color: #fff;
@@ -45,36 +36,20 @@
       font-size: 0.9rem;
       margin-top: auto;
     }
-
     main {
       flex: 1;
       padding: 40px 20px;
     }
-
-    .checker-section {
+    .breach-section {
       background: #fff;
-      border-radius: 12px;
+      border-radius: 10px;
       padding: 30px;
-      box-shadow: 0 0 12px rgba(0,0,0,0.08);
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
       max-width: 700px;
       margin: auto;
     }
-
-    #result {
-      margin-top: 25px;
-      max-height: 400px;
-      overflow-y: auto;
-    }
-
-    .list-group-item {
-      margin-bottom: 10px;
-      border-radius: 6px;
-    }
-
-    @media (max-width: 576px) {
-      .checker-section {
-        padding: 20px;
-      }
+    .alert {
+      margin-top: 20px;
     }
   </style>
 </head>
@@ -83,7 +58,7 @@
   <!-- Header -->
   <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
-      <a class="navbar-brand" href="/">
+      <a class="navbar-brand" href="index.html">
         <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
       </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
@@ -91,10 +66,10 @@
       </button>
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
         <ul class="navbar-nav">
-          <li class="nav-item"><a class="nav-link" href="/">Beranda</a></li>
-          <li class="nav-item"><a class="nav-link" href="/kebijakan-privasi.html">Kebijakan Privasi</a></li>
-          <li class="nav-item"><a class="nav-link" href="/about.html">Tentang Kami</a></li>
-          <li class="nav-item"><a class="nav-link" href="/contact.html">Kontak</a></li>
+          <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
+          <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
         </ul>
       </div>
     </div>
@@ -102,21 +77,18 @@
 
   <!-- Main Content -->
   <main class="container">
-    <div class="checker-section">
-      <h3 class="text-center mb-4">🔐 Cek Email Anda untuk Data Breach</h3>
-      <form onsubmit="event.preventDefault(); checkEmail();">
+    <div class="breach-section">
+      <h3 class="text-center mb-4">Cek Email Breach</h3>
+      <p class="text-muted text-center">Masukkan email Anda untuk memeriksa apakah pernah bocor dalam insiden keamanan data publik.</p>
+      <form id="breachForm">
         <div class="mb-3">
-          <label for="email" class="form-label">Masukkan Email:</label>
-          <input type="email" class="form-control" id="email" placeholder="nama@email.com" required />
+          <input type="email" class="form-control" id="emailInput" placeholder="contoh@email.com" required>
         </div>
-        <div class="d-grid gap-2">
-          <button type="submit" class="btn btn-primary">
-            <i class="fa fa-search me-1"></i> Cek Breach
-          </button>
+        <div class="d-grid">
+          <button type="submit" class="btn btn-warning"><i class="fa-solid fa-search me-2"></i>Periksa Sekarang</button>
         </div>
       </form>
-
-      <div id="result"></div>
+      <div id="result" class="mt-4"></div>
     </div>
   </main>
 
@@ -128,50 +100,39 @@
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    async function checkEmail() {
-      const email = document.getElementById('email').value.trim();
-      const resultDiv = document.getElementById('result');
+    const form = document.getElementById('breachForm');
+    const resultDiv = document.getElementById('result');
 
-      if (!email) {
-        resultDiv.innerHTML = '<div class="alert alert-warning">Masukkan email terlebih dahulu.</div>';
-        return;
-      }
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const email = document.getElementById('emailInput').value.trim();
 
-      resultDiv.innerHTML = '<div class="alert alert-info">Sedang memeriksa...</div>';
+      if (!email) return;
+
+      resultDiv.innerHTML = '<div class="alert alert-info">Memeriksa...</div>';
 
       try {
-        const res = await fetch(`/.netlify/functions/checkBreach?email=${encodeURIComponent(email)}`);
-        const text = await res.text();
+        const response = await fetch(`/.netlify/functions/checkBreach?email=${encodeURIComponent(email)}`);
+        const data = await response.json();
 
-        let data;
-        try {
-          data = JSON.parse(text);
-        } catch {
-          throw new Error(text);
-        }
-
-        if (!res.ok) throw new Error(data.error || 'Terjadi kesalahan.');
-
-        if (data.breached && data.breaches.length > 0) {
-          let html = '<div class="alert alert-danger"><strong>Ditemukan Breach:</strong></div>';
+        if (data.error) {
+          resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${data.error}</div>`;
+        } else if (data.breached && data.breaches.length > 0) {
+          let html = `<div class="alert alert-warning"><strong>Ditemukan kebocoran!</strong></div>`;
           html += '<ul class="list-group">';
-          data.breaches.forEach(b => {
-            html += `
-              <li class="list-group-item">
-                <h6>${b.Title} <small class="text-muted">(${b.BreachDate})</small></h6>
-                <p class="mb-1">${b.Description}</p>
-              </li>
-            `;
+          data.breaches.forEach(breach => {
+            html += `<li class="list-group-item">${breach.line}</li>`;
           });
           html += '</ul>';
           resultDiv.innerHTML = html;
         } else {
-          resultDiv.innerHTML = '<div class="alert alert-success">Email ini aman. Tidak ditemukan breach.</div>';
+          resultDiv.innerHTML = `<div class="alert alert-success">Email ini aman, tidak ditemukan dalam database kebocoran.</div>`;
         }
+
       } catch (err) {
-        resultDiv.innerHTML = `<div class="alert alert-danger">Error: ${err.message}</div>`;
+        resultDiv.innerHTML = `<div class="alert alert-danger">Gagal memeriksa: ${err.message}</div>`;
       }
-    }
+    });
   </script>
 </body>
 </html>
