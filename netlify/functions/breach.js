@@ -3,35 +3,37 @@ const fetch = require('node-fetch');
 
 exports.handler = async (event) => {
   const email = event.queryStringParameters.check;
-  const API_URL = process.env.BREACH_API_URL;  // e.g. https://www.freepublicapis.com/api/apis/275
+  const API_URL = process.env.BREACH_API_URL || 'https://leakcheck.net/api/public';
 
   if (!email) {
-    return { statusCode: 400, body: 'Parameter "check" diperlukan.' };
-  }
-  if (!API_URL) {
-    console.error('Missing BREACH_API_URL');
-    return { statusCode: 500, body: 'Server misconfiguration.' };
+    return {
+      statusCode: 400,
+      body: 'Parameter "check" diperlukan.'
+    };
   }
 
   try {
-    const res = await fetch(API_URL);
+    const url = `${API_URL}?check=${encodeURIComponent(email)}`;
+    const res = await fetch(url);
+
     if (!res.ok) {
       const errText = await res.text();
-      console.error('API error:', errText);
+      console.error('LeakCheck API error:', errText);
       throw new Error(`Status ${res.status}`);
     }
 
-    // FreePublicAPIs returns an array wrapping satu item
-    const arr = await res.json();
-    const data = Array.isArray(arr) ? arr[0] : arr;
-
+    const data = await res.json();
+    // Langsung kirim JSON mentahnya ke client
     return {
       statusCode: 200,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ success: true, api: data })
+      body: JSON.stringify(data)
     };
   } catch (err) {
     console.error('Fetch error:', err);
-    return { statusCode: 502, body: JSON.stringify({ success: false, error: 'Gagal mengambil data API.' }) };
+    return {
+      statusCode: 502,
+      body: JSON.stringify({ success: false, error: 'Gagal mengambil data LeakCheck.' })
+    };
   }
 };
