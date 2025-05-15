@@ -32,6 +32,12 @@
     .nav-link.active {
       font-weight: bold;
     }
+    /* Kecilkan tombol toggler */
+    .navbar-toggler {
+      padding: 0.25rem 0.5rem;
+      font-size: 0.875rem;
+      border-color: rgba(255,255,255,0.1);
+    }
     main {
       flex: 1;
       display: flex;
@@ -60,25 +66,25 @@
     button:hover { background: #0056b3; }
     pre { background: #272822; color: #f8f8f2; padding: 15px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; }
     .error { color: red; }
-
     @media (max-width: 576px) {
-      form {
-        flex-direction: column;
-      }
-      input[type="text"],
-      button {
-        width: 100%;
-      }
+      form { flex-direction: column; }
+      input[type="text"], button { width: 100%; }
     }
   </style>
 </head>
 <body>
 
-  <!-- Header (dari Link Checker) -->
+  <!-- Header -->
   <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
-      <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved me-2"></i>Siber Shop</a>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <a class="navbar-brand" href="index.html">
+        <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
+      </a>
+      <!-- Toggler kecil, di kanan atas -->
+      <button class="navbar-toggler ms-auto" type="button"
+              data-bs-toggle="collapse" data-bs-target="#navbarNav"
+              aria-controls="navbarNav" aria-expanded="false"
+              aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
@@ -104,7 +110,7 @@
     </div>
   </main>
 
-  <!-- Footer (dari Link Checker) -->
+  <!-- Footer -->
   <footer>
     &copy; 2025 Siber Shop Store - All Rights Reserved
   </footer>
@@ -115,7 +121,7 @@
     document.getElementById('subdomainForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const raw = document.getElementById('domainInput').value.trim();
-      const domain = raw.replace(/^https?:\/\//, '').replace(/\/$/, '');
+      const domain = raw.replace(/^https?:\\/\\//, '').replace(/\\/$/, '');
       const output = document.getElementById('output');
       if (!domain || domain.indexOf('.') === -1) {
         output.innerHTML = '<p class="error">Domain tidak valid.</p>';
@@ -132,21 +138,20 @@
         if (!Array.isArray(data) || data.length === 0) {
           output.innerHTML = '<p>Tidak ditemukan subdomain.</p>';
         } else {
-          output.innerHTML = '<pre>' + data.join('\n') + '</pre>';
+          output.innerHTML = '<pre>' + data.join('\\n') + '</pre>';
         }
       } catch (err) {
-        // Backup via Hackertarget
         try {
           const backupUrl = `https://api.hackertarget.com/hostsearch/?q=${domain}`;
           const backupAllOrigins = `https://api.allorigins.win/raw?url=${encodeURIComponent(backupUrl)}`;
           const res2 = await fetch(backupAllOrigins);
           if (!res2.ok) throw new Error('Gagal backup.');
           const text = await res2.text();
-          const lines = text.trim().split('\n').map(l => l.split(',')[0]);
+          const lines = text.trim().split('\\n').map(l => l.split(',')[0]);
           if (lines.length === 0 || lines[0] === '') {
             output.innerHTML = '<p>Tidak ditemukan subdomain di backup.</p>';
           } else {
-            output.innerHTML = '<pre>' + lines.join('\n') + '</pre>';
+            output.innerHTML = '<pre>' + lines.join('\\n') + '</pre>';
           }
         } catch (err2) {
           output.innerHTML = `<p class="error">Error: ${err2.message}</p>`;
