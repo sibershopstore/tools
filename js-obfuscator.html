@@ -54,7 +54,7 @@
       <a class="navbar-brand" href="index.html">
         <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
       </a>
-      <!-- Kembalikan toggle button default, tambahkan z-index agar klik bisa diterima -->
+      <!-- Restore default hamburger, add z-index for clickability -->
       <button class="navbar-toggler" type="button"
               data-bs-toggle="collapse" data-bs-target="#navbarNav"
               aria-controls="navbarNav" aria-expanded="false"
@@ -105,7 +105,13 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     function obfuscateText() {
-      const input = document.getElementById('inputText').value;
+      const inputEl = document.getElementById('inputText');
+      const input = inputEl.value.trim();
+      if (!input) {
+        alert('Harap masukan bidang ini');
+        inputEl.focus();
+        return;
+      }
       const encoded = btoa(unescape(encodeURIComponent(input)));
       const wrapped = `(function(){eval(decodeURIComponent(escape(atob("${encoded}"))))})();`;
       document.getElementById('outputText').value = wrapped;
