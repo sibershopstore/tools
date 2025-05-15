@@ -28,6 +28,19 @@
     button:hover { background: #0056b3; }
     pre { background: #272822; color: #f8f8f2; padding: 15px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; }
     .error { color: red; }
+    /* Responsive Styles */
+    @media (max-width: 576px) {
+      .tool-box { padding: 20px; }
+      form {
+        flex-direction: column;
+      }
+      form input[type="text"], form button {
+        width: 100%;
+      }
+      form button {
+        margin-top: 10px;
+      }
+    }
   </style>
 </head>
 <body>
