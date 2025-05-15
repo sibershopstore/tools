@@ -4,14 +4,43 @@
   <meta charset="UTF-8">
   <title>Subdomain Finder - Siber Shop</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  
   <!-- Bootstrap CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap @5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
   <!-- Font Awesome -->
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-  <!-- Header & Footer Styles -->
-  <link href="header-footer.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css " rel="stylesheet">
+
+  <!-- Internal CSS (Header & Footer + Page-Specific Styles) -->
   <style>
-    /* Page-specific styles */
+    /* === Navbar (Header) === */
+    .navbar {
+      background-color: #212529;
+    }
+
+    .navbar-brand,
+    .nav-link {
+      color: white !important;
+    }
+
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+
+    .nav-link.active {
+      font-weight: bold;
+    }
+
+    /* === Footer === */
+    footer {
+      background-color: #212529;
+      color: #fff;
+      text-align: center;
+      padding: 15px 20px;
+      font-size: 0.9rem;
+    }
+
+    /* === Page-Specific Styles === */
     html, body {
       height: 100%;
       margin: 0;
@@ -92,7 +121,7 @@
   </footer>
 
   <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap @5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
   <!-- Subdomain Finder Logic -->
   <script>
@@ -109,8 +138,8 @@
 
       output.innerHTML = '<p>Loading...</p>';
 
-      const sonarUrl = `https://sonar.omnisint.io/subdomains/${domain}`;
-      const allOriginsUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(sonarUrl)}`;
+      const sonarUrl = `https://sonar.omnisint.io/subdomains/ ${domain}`;
+      const allOriginsUrl = `https://api.allorigins.win/raw?url= ${encodeURIComponent(sonarUrl)}`;
 
       try {
         const response = await fetch(allOriginsUrl);
@@ -126,8 +155,8 @@
       } catch (err) {
         // Backup API
         try {
-          const backupUrl = `https://api.hackertarget.com/hostsearch/?q=${domain}`;
-          const backupAllOrigins = `https://api.allorigins.win/raw?url=${encodeURIComponent(backupUrl)}`;
+          const backupUrl = `https://api.hackertarget.com/hostsearch/?q= ${domain}`;
+          const backupAllOrigins = `https://api.allorigins.win/raw?url= ${encodeURIComponent(backupUrl)}`;
           const res2 = await fetch(backupAllOrigins);
           if (!res2.ok) throw new Error('Gagal menggunakan backup API.');
           const text = await res2.text();
