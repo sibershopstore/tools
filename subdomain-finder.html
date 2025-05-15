@@ -28,6 +28,17 @@
     button:hover { background: #0056b3; }
     pre { background: #272822; color: #f8f8f2; padding: 15px; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; }
     .error { color: red; }
+
+    /* Responsive form */
+    @media (max-width: 576px) {
+      form {
+        flex-direction: column;
+      }
+      input[type="text"],
+      button {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 <body>
