@@ -17,7 +17,6 @@
     .navbar {
       background-color: #212529;
       position: relative;
-      z-index: 1000;
     }
     .navbar-brand,
     .nav-link {
@@ -55,12 +54,13 @@
       <a class="navbar-brand" href="index.html">
         <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
       </a>
-      <!-- Toggler di kanan, pakai FontAwesome untuk jamin tampil -->
-      <button class="navbar-toggler ms-auto" type="button"
+      <!-- Kembalikan toggle button default, tambahkan z-index agar klik bisa diterima -->
+      <button class="navbar-toggler" type="button"
               data-bs-toggle="collapse" data-bs-target="#navbarNav"
               aria-controls="navbarNav" aria-expanded="false"
-              aria-label="Toggle navigation">
-        <i class="fa fa-bars fa-lg"></i>
+              aria-label="Toggle navigation"
+              style="z-index: 1;">
+        <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
         <ul class="navbar-nav">
