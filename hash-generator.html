@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hash Generator - Siber Shop</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet"/>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+  <style>
+    body {
+      background-color: #f8f9fa;
+      font-family: 'Poppins', sans-serif;
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+    }
+    .navbar {
+      background-color: #212529;
+    }
+    .navbar-brand, .nav-link {
+      color: white !important;
+    }
+    .navbar-brand {
+      font-weight: bold;
+      font-size: 1.5rem;
+    }
+    .nav-link.active {
+      font-weight: bold;
+    }
+    .tool-section {
+      padding: 40px 20px;
+      background: #fff;
+      margin-top: 20px;
+      flex: 1;
+    }
+    footer {
+      background: #212529;
+      color: #fff;
+      text-align: center;
+      padding: 15px 20px;
+      font-size: .9rem;
+      margin-top: auto;
+    }
+    #result {
+      word-break: break-all;
+      background: #f1f1f1;
+      border-radius: 5px;
+      padding: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="index.html">
+        <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
+          <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="tool-section">
+    <div class="container">
+      <div class="text-center mb-4">
+        <h2>Hash Generator</h2>
+        <p>Masukkan teks dan pilih jenis hash untuk mendapatkan hasilnya.</p>
+      </div>
+      <div class="row justify-content-center">
+        <div class="col-md-8">
+          <div class="mb-3">
+            <label for="inputText" class="form-label">Teks:</label>
+            <textarea id="inputText" class="form-control" rows="4" placeholder="Tulis teks di sini..."></textarea>
+          </div>
+          <div class="mb-3">
+            <label for="hashType" class="form-label">Jenis Hash:</label>
+            <select id="hashType" class="form-select">
+              <option value="MD5">MD5</option>
+              <option value="SHA1">SHA-1</option>
+              <option value="SHA256" selected>SHA-256</option>
+            </select>
+          </div>
+          <div class="d-grid gap-2 mb-3">
+            <button class="btn btn-primary" onclick="generateHash()">
+              <i class="fa fa-lock me-1"></i>Generate Hash
+            </button>
+          </div>
+          <div class="mb-3">
+            <label for="result" class="form-label">Hasil:</label>
+            <div id="result" class="form-control" readonly></div>
+            <button class="btn btn-outline-secondary btn-sm mt-2" onclick="copyResult()">
+              <i class="fa fa-copy me-1"></i>Salin
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    &copy; 2025 Siber Shop Store - All Rights Reserved
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+    function generateHash() {
+      const text = document.getElementById('inputText').value.trim();
+      const type = document.getElementById('hashType').value;
+      if (!text) {
+        alert("Teks tidak boleh kosong.");
+        return;
+      }
+
+      let hash = '';
+      switch (type) {
+        case 'MD5':
+          hash = CryptoJS.MD5(text).toString();
+          break;
+        case 'SHA1':
+          hash = CryptoJS.SHA1(text).toString();
+          break;
+        case 'SHA256':
+          hash = CryptoJS.SHA256(text).toString();
+          break;
+        default:
+          hash = 'Tipe hash tidak dikenal.';
+      }
+
+      document.getElementById('result').innerText = hash;
+    }
+
+    function copyResult() {
+      const text = document.getElementById("result").innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        alert("Hash disalin ke clipboard!");
+      });
+    }
+  </script>
+</body>
+</html>
