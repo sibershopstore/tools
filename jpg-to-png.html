@@ -16,38 +16,64 @@
       flex-direction: column;
       min-height: 100vh;
     }
-   .navbar {
+
+    .navbar {
       background-color: #212529;
     }
-    .navbar .container {
-      padding-left: 0;
-      padding-right: 0;
-    }
+
     .navbar-brand {
+      color: #fff !important;
       font-weight: bold;
       font-size: 1.5rem;
-      color: #fff !important;
-      padding-left: 1rem;
     }
-    .nav-link {
-      color: #fff !important;
-      font-size: 1rem;
-      padding: 0.75rem 1rem;
-    }
-    .nav-link:hover, .nav-link.active {
-      font-weight: bold;
-      color: #ffc107 !important;
-    }
+
     .navbar-toggler {
       border: none;
-      margin-right: 1rem;
     }
+
+    .navbar-toggler:focus {
+      box-shadow: none;
+    }
+
+    .navbar-toggler-icon {
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba%28255,255,255,0.8%29' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+    }
+
+    .navbar-nav .nav-link {
+      color: #fff !important;
+      transition: color 0.3s;
+    }
+
+    .navbar-nav .nav-link:hover,
+    .navbar-nav .nav-link.active {
+      font-weight: bold;
+      color: #0d6efd !important;
+    }
+
+    @media (max-width: 991.98px) {
+      .navbar-collapse {
+        background-color: #212529;
+        padding: 10px;
+        border-top: 1px solid #444;
+      }
+
+      .navbar-nav .nav-link {
+        padding: 10px 0;
+        border-bottom: 1px solid #444;
+      }
+
+      .navbar-nav .nav-link:last-child {
+        border-bottom: none;
+      }
+    }
+
     .converter-section {
       padding: 40px 20px;
       background: #fff;
       margin-top: 20px;
       flex: 1;
     }
+
     .drop-area {
       width: 100%;
       min-height: 200px;
@@ -61,12 +87,15 @@
       text-align: center;
       padding: 30px;
     }
+
     .drop-area.dragover {
       background: #e9ecef;
     }
+
     #loadingSpinner {
       display: none;
     }
+
     footer {
       background: #212529;
       color: #fff;
@@ -75,15 +104,6 @@
       font-size: .9rem;
       margin-top: auto;
     }
-
-    /* Tambahan agar navbar collapse berfungsi */
-    .navbar-toggler {
-      border: none;
-    }
-    .navbar-toggler:focus {
-      outline: none;
-      box-shadow: none;
-    }
   </style>
 </head>
 <body>
@@ -91,7 +111,9 @@
   <!-- Header -->
   <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
-      <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved me-2"></i>Siber Shop</a>
+      <a class="navbar-brand" href="index.html">
+        <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
+      </a>
       <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
         <span class="navbar-toggler-icon"></span>
       </button>
@@ -144,6 +166,7 @@
     </div>
   </main>
 
+  <!-- Footer -->
   <footer>
     &copy; 2025 Siber Shop Store - All Rights Reserved
   </footer>
