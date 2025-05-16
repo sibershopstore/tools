@@ -9,79 +9,17 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
   <style>
-    body {
-      background-color: #f8f9fa;
-      font-family: 'Poppins', sans-serif;
-      display: flex;
-      flex-direction: column;
-      min-height: 100vh;
-    }
-   .navbar {
-      background-color: #212529;
-    }
-    .navbar .container {
-      padding-left: 0;
-      padding-right: 0;
-    }
-    .navbar-brand {
-      font-weight: bold;
-      font-size: 1.5rem;
-      color: #fff !important;
-      padding-left: 1rem;
-    }
-    .nav-link {
-      color: #fff !important;
-      font-size: 1rem;
-      padding: 0.75rem 1rem;
-    }
-    .nav-link:hover, .nav-link.active {
-      font-weight: bold;
-      color: #ffc107 !important;
-    }
-    .navbar-toggler {
-      border: none;
-      margin-right: 1rem;
-    }
-    .converter-section {
-      padding: 40px 20px;
-      background: #fff;
-      margin-top: 20px;
-      flex: 1;
-    }
-    .drop-area {
-      width: 100%;
-      min-height: 200px;
-      border: 2px dashed #007bff;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      background: #f1f1f1;
-      cursor: pointer;
-      margin-bottom: 20px;
-      text-align: center;
-      padding: 30px;
-    }
-    .drop-area.dragover {
-      background: #e9ecef;
-    }
-    #loadingSpinner {
-      display: none;
-    }
-    footer {
-      background: #212529;
-      color: #fff;
-      text-align: center;
-      padding: 15px 20px;
-      font-size: .9rem;
-      margin-top: auto;
-    }
-    /* Navbar toggler */
-    .navbar-toggler {
-      border: none;
-    }
-    .navbar-toggler:focus {
-      box-shadow: none;
-    }
+    body { background-color: #f8f9fa; font-family: 'Poppins', sans-serif; display: flex; flex-direction: column; min-height: 100vh; }
+    .navbar { background-color: #212529; }
+    .navbar-brand, .nav-link { color: #fff !important; }
+    .navbar-brand { font-weight: bold; font-size: 1.5rem; }
+    .nav-link:hover, .nav-link.active { font-weight: bold; }
+    main { flex: 1; padding: 40px 20px; }
+    .converter-section { padding: 40px 20px; background: #fff; margin-top: 20px; flex: 1; }
+    .drop-area { width: 100%; min-height: 200px; border: 2px dashed #007bff; display: flex; justify-content: center; align-items: center; background: #f1f1f1; cursor: pointer; margin-bottom: 20px; text-align: center; padding: 30px; }
+    .drop-area.dragover { background: #e9ecef; }
+    #loadingSpinner { display: none; }
+    footer { background: #212529; color: #fff; text-align: center; padding: 15px 20px; font-size: .9rem; margin-top: auto; }
   </style>
 </head>
 <body>
@@ -89,13 +27,8 @@
   <!-- Header -->
   <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
-      <a class="navbar-brand" href="index.html">
-        <i class="fa-solid fa-shield-halved me-2"></i>Siber Shop
-      </a>
-      <button class="navbar-toggler" type="button"
-              data-bs-toggle="collapse" data-bs-target="#navbarNav"
-              aria-controls="navbarNav" aria-expanded="false"
-              aria-label="Toggle navigation">
+      <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved me-2"></i>Siber Shop</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
       </button>
       <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
@@ -125,23 +58,17 @@
       <div class="mt-3" id="previewCount" style="display:none;"></div>
 
       <div class="mt-3" id="convertContainer" style="display:none;">
-        <button id="convertBtn" class="btn btn-primary">
-          <i class="fa fa-cogs me-1"></i>Convert & Download
-        </button>
+        <button id="convertBtn" class="btn btn-primary"><i class="fa fa-cogs me-1"></i>Convert & Download</button>
       </div>
 
       <div id="loadingSpinner" class="mt-4 text-center">
-        <div class="progress mx-auto" style="width: 300px;">
-          <div id="loadingBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%">0%</div>
-        </div>
+        <div class="progress mx-auto" style="width: 300px;"><div id="loadingBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width: 0%">0%</div></div>
         <p class="mt-2">Mengonversi gambar, mohon tunggu...</p>
       </div>
 
       <div class="mt-4" id="downloadArea" style="display:none;">
         <p class="text-success mb-2">Konversi selesai!</p>
-        <a id="downloadLink" class="btn btn-success" download>
-          <i class="fa fa-download me-1"></i>Download
-        </a>
+        <a id="downloadLink" class="btn btn-success" download><i class="fa fa-download me-1"></i>Download</a>
         <p class="mt-2 text-muted">Jika mengunggah lebih dari satu file, hasil akan berupa file ZIP.</p>
       </div>
     </div>
@@ -170,11 +97,7 @@
     dropArea.addEventListener('click', () => fileInput.click());
     dropArea.addEventListener('dragover', e => { e.preventDefault(); dropArea.classList.add('dragover'); });
     dropArea.addEventListener('dragleave', () => dropArea.classList.remove('dragover'));
-    dropArea.addEventListener('drop', e => {
-      e.preventDefault();
-      dropArea.classList.remove('dragover');
-      handleFiles(e.dataTransfer.files);
-    });
+    dropArea.addEventListener('drop', e => { e.preventDefault(); dropArea.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
     fileInput.addEventListener('change', () => handleFiles(fileInput.files));
 
     function handleFiles(selectedFiles) {
@@ -217,48 +140,30 @@
       if (files.length === 1) {
         const reader = new FileReader();
         reader.onload = e => {
-          const img = new Image();
-          img.onload = () => {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0);
-            canvas.toBlob(blob => {
-              const url = URL.createObjectURL(blob);
-              downloadLink.href = url;
-              downloadLink.download = 'converted.png';
-              loadingSpinner.style.display = 'none';
-              downloadArea.style.display = 'block';
+          const img = new Image(); img.onload = () => {
+            const canvas = document.createElement('canvas'); canvas.width = img.width; canvas.height = img.height;
+            const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0);
+            canvas.toBlob(blob => { const url = URL.createObjectURL(blob);
+              downloadLink.href = url; downloadLink.download = 'converted.png';
+              loadingSpinner.style.display = 'none'; downloadArea.style.display = 'block';
             }, 'image/png');
           };
           img.src = e.target.result;
         };
         reader.readAsDataURL(files[0]);
       } else {
-        const zip = new JSZip();
-        let processed = 0;
-
+        const zip = new JSZip(); let processed = 0;
         files.forEach((file, i) => {
-          const reader = new FileReader();
-          reader.onload = e => {
-            const img = new Image();
-            img.onload = () => {
-              const canvas = document.createElement('canvas');
-              canvas.width = img.width;
-              canvas.height = img.height;
-              const ctx = canvas.getContext('2d');
-              ctx.drawImage(img, 0, 0);
-              canvas.toBlob(blob => {
-                zip.file(`converted_${i + 1}.png`, blob);
-                processed++;
-                if (processed === files.length) {
+          const reader = new FileReader(); reader.onload = e => {
+            const img = new Image(); img.onload = () => {
+              const canvas = document.createElement('canvas'); canvas.width = img.width; canvas.height = img.height;
+              const ctx = canvas.getContext('2d'); ctx.drawImage(img, 0, 0);
+              canvas.toBlob(blob => { zip.file(`converted_${i + 1}.png`, blob);
+                processed++; if (processed === files.length) {
                   zip.generateAsync({ type: 'blob' }).then(content => {
                     const url = URL.createObjectURL(content);
-                    downloadLink.href = url;
-                    downloadLink.download = 'converted_images.zip';
-                    loadingSpinner.style.display = 'none';
-                    downloadArea.style.display = 'block';
+                    downloadLink.href = url; downloadLink.download = 'converted_images.zip';
+                    loadingSpinner.style.display = 'none'; downloadArea.style.display = 'block';
                   });
                 }
               }, 'image/png');
