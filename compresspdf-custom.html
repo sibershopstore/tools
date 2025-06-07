@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Compress PDF Custom – Siber Shop Tools</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Bootstrap & Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+
+  <style>
+    body { background:#f8f9fa; display:flex; flex-direction:column; min-height:100vh; font-family:'Poppins',sans-serif; }
+    .navbar { background-color: #212529; }
+    .navbar-brand, .nav-link { color: white !important; }
+    .navbar-brand { font-weight: bold; font-size: 1.5rem; }
+    .nav-link.active, .nav-link:hover { font-weight: bold; color: #ffc107 !important; }
+    footer { background:#212529; color:#fff; text-align:center; padding:15px 20px; margin-top:auto; font-size:.9rem; }
+    .tool-section { flex:1; padding:60px 20px; }
+    .tool-box { background:#fff; border-radius:10px; box-shadow:0 0 10px rgba(0,0,0,0.05); max-width:720px; margin:0 auto; padding:30px; }
+    .tool-box h1 { text-align:center; margin-bottom:1rem; }
+    #loader { display:none; text-align:center; margin:20px; }
+    #loader .spinner-border { width:3rem; height:3rem; }
+    #loaderText { font-size:1.2rem; margin-top:10px; animation:fadeInOut 2s infinite; }
+    @keyframes fadeInOut { 0%,100% { opacity:0.3; } 50% { opacity:1; } }
+    #statusText { text-align:center; margin-top:10px; color:#555; }
+    .result-box { text-align:center; margin-top:20px; display:none; }
+    canvas { display:none; } /* Canvas hanya untuk proses internal */
+  </style>
+</head>
+<body>
+
+  <!-- Header (TIDAK DIUBAH) -->
+  <nav class="navbar navbar-expand-lg navbar-dark">
+    <div class="container">
+      <a class="navbar-brand" href="index.html"><i class="fa-solid fa-shield-halved me-2"></i>Siber Shop</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navBar">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse justify-content-end" id="navBar">
+        <ul class="navbar-nav">
+          <li class="nav-item"><a class="nav-link" href="index.html">Beranda</a></li>
+          <li class="nav-item"><a class="nav-link" href="kebijakan-privasi.html">Kebijakan Privasi</a></li>
+          <li class="nav-item"><a class="nav-link" href="about.html">Tentang Kami</a></li>
+          <li class="nav-item"><a class="nav-link" href="contact.html">Kontak</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <!-- End Header -->
+
+  <!-- Main Tool Section -->
+  <section class="tool-section">
+    <div class="tool-box">
+      <h1>Compress PDF Custom</h1>
+
+      <!-- Pilih File PDF -->
+      <div class="mb-3">
+        <label for="pdfFile" class="form-label">Pilih file PDF:</label>
+        <input type="file" id="pdfFile" class="form-control" accept="application/pdf">
+      </div>
+
+      <!-- Input Ukuran Target -->
+      <div class="mb-3">
+        <label for="targetSize" class="form-label">Ukuran Target (KB) ≤ 500 KB:</label>
+        <input type="number" id="targetSize" class="form-control" value="500" min="50" max="2000">
+        <div class="form-text">Masukkan target ukuran maksimal dalam KB. Contoh: 500 untuk 500 KB.</div>
+      </div>
+
+      <!-- Tombol Compress -->
+      <button id="btnCompress" class="btn btn-warning w-100">
+        <i class="fa-solid fa-compress me-2"></i>Compress Sekarang
+      </button>
+
+      <!-- Loader dan Status -->
+      <div id="loader">
+        <div class="spinner-border text-warning" role="status"></div>
+        <div id="loaderText">Memproses...</div>
+      </div>
+      <p id="statusText"></p>
+
+      <!-- Tombol Download Hasil -->
+      <div id="resultBox" class="result-box">
+        <a id="downloadLink" class="btn btn-success" download="compressed.pdf">
+          <i class="fa-solid fa-download me-1"></i>Unduh PDF Terkompresi
+        </a>
+      </div>
+
+      <!-- Canvas Tersembunyi (proses internal rendering) -->
+      <canvas id="pageCanvas"></canvas>
+    </div>
+  </section>
+  <!-- End Main Tool Section -->
+
+  <!-- Footer (TIDAK DIUBAH) -->
+  <footer>&copy; 2025 Siber Shop Store - All Rights Reserved</footer>
+  <!-- End Footer -->
+
+  <!-- Dependencies -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- PDF.js Core -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.15.349/pdf.min.js"></script>
+  <!-- PDF-Lib -->
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+
+  <script>
+    (async () => {
+      // Konfigurasi PDF.js: tentukan lokasi worker
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.15.349/pdf.worker.min.js';
+    })();
+
+    document.getElementById('btnCompress').addEventListener('click', async () => {
+      const fileInput = document.getElementById('pdfFile');
+      const targetKB = parseInt(document.getElementById('targetSize').value);
+      const statusText = document.getElementById('statusText');
+      const loader = document.getElementById('loader');
+      const loaderText = document.getElementById('loaderText');
+      const resultBox = document.getElementById('resultBox');
+      const downloadLink = document.getElementById('downloadLink');
+      const canvas = document.getElementById('pageCanvas');
+      const ctx = canvas.getContext('2d');
+
+      statusText.textContent = '';
+      resultBox.style.display = 'none';
+
+      if (!fileInput.files.length) {
+        alert('Silakan pilih file PDF terlebih dahulu.');
+        return;
+      }
+      if (!targetKB || targetKB < 50) {
+        alert('Ukuran target minimal 50 KB.');
+        return;
+      }
+
+      // Tampilkan loader
+      loader.style.display = 'block';
+      loaderText.textContent = 'Memproses…';
+
+      try {
+        // 1. Baca file PDF sebagai ArrayBuffer
+        const file = fileInput.files[0];
+        const arrayBuffer = await file.arrayBuffer();
+
+        // 2. Muat PDF menggunakan PDF.js
+        const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        const numPages = pdf.numPages;
+
+        // 3. Siapkan dokumen baru lewat PDF-Lib
+        const pdfLibDoc = await PDFLib.PDFDocument.create();
+
+        // 4. Untuk setiap halaman, render ke canvas, lalu konversi ke JPEG
+        for (let i = 1; i <= numPages; i++) {
+          loaderText.textContent = `Memproses halaman ${i} dari ${numPages}…`;
+
+          const page = await pdf.getPage(i);
+          // Atur resolusi output: agar lebih kecil, gunakan scale rendah
+          const viewport = page.getViewport({ scale: 1.0 });
+          // Misal kita batasi lebar ke 800px (jika lebar asli lebih besar)
+          const maxWidth = 800;
+          const scale = viewport.width > maxWidth ? maxWidth / viewport.width : 1.0;
+          const scaledViewport = page.getViewport({ scale });
+
+          canvas.width = scaledViewport.width;
+          canvas.height = scaledViewport.height;
+
+          const renderContext = {
+            canvasContext: ctx,
+            viewport: scaledViewport
+          };
+          await page.render(renderContext).promise;
+
+          // Konversi canvas ke JPEG dengan kualitas variabel
+          // Kita mulai quality 0.8; nanti jika hasil akhir > target, kita ulangi dari awal dengan quality lebih rendah.
+          const jpegQuality = 0.8;
+          const jpegDataUrl = canvas.toDataURL('image/jpeg', jpegQuality);
+
+          // Ubah DataURL jadi Uint8Array
+          const base64 = jpegDataUrl.split(',')[1];
+          const imgBytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+
+          // Masukkan gambar sebagai halaman baru di PDF-Lib
+          const embeddedJpg = await pdfLibDoc.embedJpg(imgBytes);
+          const pageDims = embeddedJpg.scale(1);
+          const newPage = pdfLibDoc.addPage([pageDims.width, pageDims.height]);
+          newPage.drawImage(embeddedJpg, {
+            x: 0,
+            y: 0,
+            width: pageDims.width,
+            height: pageDims.height
+          });
+        }
+
+        // 5. Simpan PDF awal dengan kualitas JPEG=0.8
+        let finalBytes = await pdfLibDoc.save();
+        let finalKB = Math.round(finalBytes.byteLength / 1024);
+
+        // 6. Jika masih lebih besar daripada target, ulangi proses dengan quality lebih rendah (0.6 → 0.4 → 0.2)
+        const qualitySteps = [0.6, 0.4, 0.2];
+        for (let q of qualitySteps) {
+          if (finalKB <= targetKB) break;
+
+          // Buat dokumen baru ulang dari PDF.js dan scale halaman (agar image present baru)
+          const pdf2 = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+          const pdfLibDoc2 = await PDFLib.PDFDocument.create();
+
+          for (let i = 1; i <= numPages; i++) {
+            loaderText.textContent = `Memproses ulang halaman ${i} (q=${q})…`;
+            const page = await pdf2.getPage(i);
+            const viewport = page.getViewport({ scale: 1.0 });
+            const maxWidth = 800;
+            const scale = viewport.width > maxWidth ? maxWidth / viewport.width : 1.0;
+            const scaledViewport = page.getViewport({ scale });
+
+            canvas.width = scaledViewport.width;
+            canvas.height = scaledViewport.height;
+            await page.render({ canvasContext: ctx, viewport: scaledViewport }).promise;
+
+            const jpegDataUrl = canvas.toDataURL('image/jpeg', q);
+            const base64 = jpegDataUrl.split(',')[1];
+            const imgBytes = Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+
+            const embeddedJpg = await pdfLibDoc2.embedJpg(imgBytes);
+            const pageDims = embeddedJpg.scale(1);
+            const newPage = pdfLibDoc2.addPage([pageDims.width, pageDims.height]);
+            newPage.drawImage(embeddedJpg, {
+              x: 0,
+              y: 0,
+              width: pageDims.width,
+              height: pageDims.height
+            });
+          }
+
+          finalBytes = await pdfLibDoc2.save();
+          finalKB = Math.round(finalBytes.byteLength / 1024);
+        }
+
+        loader.style.display = 'none';
+        statusText.textContent = finalKB <= targetKB
+          ? `👍 Sukses: ukuran akhir ${finalKB} KB (target ≤ ${targetKB} KB).`
+          : `⚠️ Gagal mencapai ≤ ${targetKB} KB, hasil ${finalKB} KB.`;
+
+        // Jika hasil memenuhi, tampilkan link unduh
+        if (finalKB <= targetKB) {
+          const blob = new Blob([finalBytes], { type: 'application/pdf' });
+          downloadLink.href = URL.createObjectURL(blob);
+          document.getElementById('resultBox').style.display = 'block';
+        } else {
+          document.getElementById('resultBox').style.display = 'none';
+        }
+
+      } catch (err) {
+        loader.style.display = 'none';
+        statusText.textContent = '❌ Terjadi kesalahan: ' + err.message;
+        console.error(err);
+      }
+    });
+  </script>
+</body>
+</html>
