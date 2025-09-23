@@ -16,47 +16,15 @@
       font-family: 'Poppins', sans-serif;
     }
     .navbar { background-color: #212529; }
-    .navbar-brand {
-      font-weight: bold;
-      font-size: 1.5rem;
-      color: #fff !important;
-    }
-    .nav-link {
-      color: #fff !important;
-    }
-    .nav-link:hover, .nav-link.active {
-      font-weight: bold;
-      color: #ffc107 !important;
-    }
-    footer {
-      background-color: #212529;
-      color: #fff;
-      text-align: center;
-      padding: 15px 20px;
-      font-size: 0.9rem;
-      margin-top: auto;
-    }
+    .navbar-brand { font-weight: bold; font-size: 1.5rem; color: #fff !important; }
+    .nav-link { color: #fff !important; }
+    .nav-link:hover, .nav-link.active { font-weight: bold; color: #ffc107 !important; }
+    footer { background-color: #212529; color: #fff; text-align: center; padding: 15px 20px; font-size: 0.9rem; margin-top: auto; }
     main { flex: 1; padding: 40px 20px; }
-    .metadata-section {
-      background: #fff;
-      border-radius: 10px;
-      padding: 30px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    .table-responsive {
-      margin-top: 20px;
-    }
-    .location-info {
-      font-weight: bold;
-      margin-top: 20px;
-      background: #e9f7ef;
-      padding: 15px;
-      border-radius: 8px;
-      color: #155724;
-    }
-    .alert {
-      margin-top: 20px;
-    }
+    .metadata-section { background: #fff; border-radius: 10px; padding: 30px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+    .table-responsive { margin-top: 20px; }
+    .location-info { font-weight: bold; margin-top: 20px; background: #e9f7ef; padding: 15px; border-radius: 8px; color: #155724; }
+    .alert { margin-top: 20px; }
   </style>
 </head>
 <body>
@@ -84,7 +52,7 @@
   <!-- Main Content -->
   <main class="container">
     <div class="metadata-section">
-      <h3 class="text-center">Cek Metadata Gambar (EXIF + Lokasi)</h3>
+      <h3 class="text-center">Cek Metadata Gambar (via API EXIF)</h3>
       <input type="file" class="form-control" id="imageInput" accept="image/*">
       <div class="table-responsive" id="metadataTable"></div>
       <div id="locationInfo" class="location-info"></div>
@@ -97,223 +65,10 @@
   </footer>
 
   <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/exifr/dist/full.umd.js"></script>
   <script>
     const input = document.getElementById('imageInput');
     const metadataTable = document.getElementById('metadataTable');
     const locationInfo = document.getElementById('locationInfo');
-
-    // OpenCage API key (base64 encoded as before)
-    const encodedKey = "ZDVkYzAzOGY1NzUzNDY0MjgxZmYwMTZiZjIyODdlYWM=";
-    const openCageApiKey = atob(encodedKey);
-
-    // Robust conversion for many EXIF "rational" shapes
-    function rationalToNumber(part) {
-      if (part === null || typeof part === 'undefined') return NaN;
-      if (typeof part === 'number' && Number.isFinite(part)) return part;
-      if (typeof part === 'string') {
-        const p = parseFloat(part);
-        return Number.isFinite(p) ? p : NaN;
-      }
-      // if object with numerator/denominator
-      if (typeof part === 'object') {
-        // exifr sometimes gives {numerator,denominator}
-        if ('numerator' in part && 'denominator' in part && part.denominator != 0) {
-          return part.numerator / part.denominator;
-        }
-        // sometimes exifr returns arrays inside arrays
-        if (Array.isArray(part) && part.length > 0) {
-          return rationalToNumber(part[0]);
-        }
-      }
-      // array of two numbers [num, den]
-      if (Array.isArray(part) && part.length >= 2 && typeof part[0] === 'number' && typeof part[1] === 'number' && part[1] !== 0) {
-        return part[0] / part[1];
-      }
-      // fallback parse
-      try {
-        const parsed = parseFloat(String(part));
-        return Number.isFinite(parsed) ? parsed : NaN;
-      } catch (e) {
-        return NaN;
-      }
-    }
-
-    // Convert DMS array (deg,min,sec) to decimal degrees
-    function dmsArrayToDecimal(arr) {
-      if (!Array.isArray(arr)) return NaN;
-      if (arr.length >= 3) {
-        const deg = rationalToNumber(arr[0]);
-        const min = rationalToNumber(arr[1]);
-        const sec = rationalToNumber(arr[2]);
-        if (!Number.isFinite(deg)) return NaN;
-        return deg + (Number.isFinite(min) ? min / 60 : 0) + (Number.isFinite(sec) ? sec / 3600 : 0);
-      }
-      // fallback: try first element
-      const first = rationalToNumber(arr[0]);
-      return Number.isFinite(first) ? first : NaN;
-    }
-
-    // Extract coordinates from as many possible places as available
-    function extractCoords(metadata) {
-      // 1) exifr's friendly properties
-      if (typeof metadata.latitude === 'number' && typeof metadata.longitude === 'number' && Number.isFinite(metadata.latitude) && Number.isFinite(metadata.longitude)) {
-        return { lat: metadata.latitude, lon: metadata.longitude };
-      }
-
-      // 2) GPSLatitude / GPSLongitude (DMS arrays or rationals)
-      if (metadata.GPSLatitude && metadata.GPSLongitude) {
-        const lat = dmsArrayToDecimal(metadata.GPSLatitude);
-        const lon = dmsArrayToDecimal(metadata.GPSLongitude);
-        let latFinal = Number.isFinite(lat) ? lat : null;
-        let lonFinal = Number.isFinite(lon) ? lon : null;
-        // apply refs if present
-        const latRef = metadata.GPSLatitudeRef || metadata.GPSLatRef || null;
-        const lonRef = metadata.GPSLongitudeRef || metadata.GPSLngRef || null;
-        if (latFinal !== null && latRef && String(latRef).toUpperCase() === 'S') latFinal = -Math.abs(latFinal);
-        if (lonFinal !== null && lonRef && String(lonRef).toUpperCase() === 'W') lonFinal = -Math.abs(lonFinal);
-        return { lat: latFinal, lon: lonFinal };
-      }
-
-      // 3) metadata.gps object (some libraries)
-      if (metadata.gps && typeof metadata.gps === 'object') {
-        if (typeof metadata.gps.latitude === 'number' && typeof metadata.gps.longitude === 'number') {
-          return { lat: metadata.gps.latitude, lon: metadata.gps.longitude };
-        }
-        if (metadata.gps.GPSLatitude && metadata.gps.GPSLongitude) {
-          const lat = dmsArrayToDecimal(metadata.gps.GPSLatitude);
-          const lon = dmsArrayToDecimal(metadata.gps.GPSLongitude);
-          return { lat: Number.isFinite(lat) ? lat : null, lon: Number.isFinite(lon) ? lon : null };
-        }
-      }
-
-      return { lat: null, lon: null };
-    }
-
-    // Parse GPSTimeStamp robustly (handles rationals, numbers, strings)
-    function parseGPSTime(metadata) {
-      // Prefer GPSTimeStamp + GPSDateStamp
-      let datePart = metadata.GPSDateStamp || metadata.GPSDate || null;
-      let timePart = null;
-
-      const rawTime = metadata.GPSTimeStamp || metadata.GPSTime || metadata.gps && metadata.gps.GPSTimeStamp;
-      if (Array.isArray(rawTime) && rawTime.length > 0) {
-        const parts = rawTime.map(p => rationalToNumber(p));
-        // if any part is NaN, try to salvage by using DateTimeOriginal
-        if (parts.every(x => Number.isFinite(x))) {
-          const hh = String(Math.trunc(parts[0])).padStart(2, '0');
-          const mm = parts.length > 1 && Number.isFinite(parts[1]) ? String(Math.trunc(parts[1])).padStart(2, '0') : '00';
-          const ssNum = parts.length > 2 && Number.isFinite(parts[2]) ? parts[2] : 0;
-          const ss = String(Math.trunc(ssNum)).padStart(2, '0');
-          timePart = `${hh}:${mm}:${ss}`;
-        } else {
-          // partially valid: fill invalid with 00
-          const hh = Number.isFinite(parts[0]) ? String(Math.trunc(parts[0])).padStart(2,'0') : '00';
-          const mm = Number.isFinite(parts[1]) ? String(Math.trunc(parts[1])).padStart(2,'0') : '00';
-          const ss = Number.isFinite(parts[2]) ? String(Math.trunc(parts[2])).padStart(2,'0') : '00';
-          // if all three are zeros then treat as invalid
-          if (hh === '00' && mm === '00' && ss === '00') timePart = null;
-          else timePart = `${hh}:${mm}:${ss}`;
-        }
-      } else if (typeof rawTime === 'string') {
-        // try to extract hh:mm:ss from string
-        const m = rawTime.match(/(\d{1,2}):(\d{1,2}):?(\d{0,2})?/);
-        if (m) {
-          const hh = m[1].padStart(2,'0');
-          const mm = m[2].padStart(2,'0');
-          const ss = (m[3] || '00').padStart(2,'0');
-          timePart = `${hh}:${mm}:${ss}`;
-        }
-      }
-
-      // If no datePart, try to use DateTimeOriginal's date portion
-      if (!datePart && metadata.DateTimeOriginal) {
-        // DateTimeOriginal sometimes like '2025:09:23 12:34:56' or Date object
-        if (metadata.DateTimeOriginal instanceof Date) {
-          const d = metadata.DateTimeOriginal;
-          datePart = `${d.getFullYear()}:${String(d.getMonth()+1).padStart(2,'0')}:${String(d.getDate()).padStart(2,'0')}`;
-          if (!timePart) {
-            timePart = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
-          }
-        } else if (typeof metadata.DateTimeOriginal === 'string') {
-          const dt = metadata.DateTimeOriginal;
-          const dateMatch = dt.match(/(\d{4}[:\-]\d{1,2}[:\-]\d{1,2})/);
-          const timeMatch = dt.match(/(\d{1,2}:\d{1,2}:\d{1,2})/);
-          if (dateMatch) datePart = dateMatch[1].replace(/-/g, ':');
-          if (!timePart && timeMatch) timePart = timeMatch[1];
-        }
-      }
-
-      if (datePart || timePart) {
-        return ((datePart || '') + (timePart ? ' ' + timePart : '')).trim();
-      }
-      return null;
-    }
-
-    function formatValue(v) {
-      if (v === null || typeof v === 'undefined') return '';
-      if (v instanceof Date) return v.toLocaleString('id-ID');
-      if (Array.isArray(v)) return JSON.stringify(v);
-      if (typeof v === 'object') {
-        try {
-          return JSON.stringify(v, (k,val) => {
-            if (Array.isArray(val) && val.length > 30) return val.slice(0,30).concat([`...(${val.length} items)`]);
-            return val;
-          }, 2);
-        } catch (e) {
-          return String(v);
-        }
-      }
-      return String(v);
-    }
-
-    function buildTable(metadata, file) {
-      let html = '<table class="table table-bordered table-striped">';
-      html += '<thead class="table-dark"><tr><th>Properti</th><th>Nilai</th></tr></thead><tbody>';
-      html += `<tr><td>Ukuran File</td><td>${(file.size/1024).toFixed(2)} KB</td></tr>`;
-
-      if (metadata.DateTimeOriginal) {
-        const dt = metadata.DateTimeOriginal instanceof Date ? metadata.DateTimeOriginal.toLocaleString('id-ID') : metadata.DateTimeOriginal;
-        html += `<tr><td>Tanggal Pengambilan</td><td>${dt}</td></tr>`;
-      }
-
-      const gpsDateTime = parseGPSTime(metadata);
-      if (gpsDateTime) {
-        html += `<tr><td>GPS Date/Time</td><td>${gpsDateTime}</td></tr>`;
-      }
-
-      // show other props but skip raw GPS arrays for brevity
-      const skip = new Set(['GPSLatitude','GPSLongitude','GPSLatitudeRef','GPSLongitudeRef','GPSTimeStamp','GPSDateStamp','gps','latitude','longitude']);
-      for (const [k,v] of Object.entries(metadata)) {
-        if (skip.has(k)) continue;
-        html += `<tr><td>${k}</td><td><pre style="margin:0; white-space:pre-wrap;">${formatValue(v)}</pre></td></tr>`;
-      }
-
-      html += '</tbody></table>';
-      return html;
-    }
-
-    async function reverseGeocode(lat, lon) {
-      try {
-        const q = encodeURIComponent(`${lat} ${lon}`);
-        const url = `https://api.opencagedata.com/geocode/v1/json?q=${q}&key=${encodeURIComponent(openCageApiKey)}&no_annotations=1&language=id`;
-        const res = await fetch(url);
-        if (!res.ok) return null;
-        const j = await res.json();
-        if (j && j.results && j.results.length > 0) return j.results[0].formatted;
-        return null;
-      } catch (e) {
-        console.warn('Reverse geocode error:', e);
-        return null;
-      }
-    }
-
-    function isLikelyJPEG(file) {
-      if (!file || !file.type) return false;
-      const t = file.type.toLowerCase();
-      return t.includes('jpeg') || t.includes('jpg');
-    }
 
     input.addEventListener('change', async () => {
       const file = input.files[0];
@@ -321,48 +76,54 @@
       locationInfo.textContent = '';
 
       if (!file) return;
-      console.log('File selected:', file);
 
-      if (!isLikelyJPEG(file)) {
-        metadataTable.innerHTML = `<div class="alert alert-info">Perhatian: file ini bukan JPEG. Banyak format (PNG, WebP, HEIC) sering tidak menyimpan EXIF. Tetap mencoba parse...</div>`;
-      } else {
-        metadataTable.innerHTML = `<div class="alert alert-info">Membaca metadata EXIF... Mohon tunggu.</div>`;
-      }
+      // Convert image to Base64 for API
+      const reader = new FileReader();
+      reader.onloadend = async () => {
+        const base64data = reader.result.split(',')[1];
 
-      try {
-        // Parse with exifr (gps:true gives friendly fields when possible)
-        const metadata = await exifr.parse(file, { gps: true, exif: true, tiff: true });
-        console.log('Metadata extracted:', metadata);
+        try {
+          // API open source exif.tools
+          const response = await fetch("https://api.exif.tools/v1/exif", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ file: base64data })
+          });
 
-        if (!metadata || Object.keys(metadata).length === 0) {
-          metadataTable.innerHTML = `<div class="alert alert-warning">Tidak ditemukan metadata EXIF pada file ini.</div>`;
-          locationInfo.textContent = '⚠️ Metadata tidak mengandung informasi GPS.';
-          return;
-        }
+          if (!response.ok) throw new Error("Gagal memanggil API EXIF");
+          const data = await response.json();
 
-        metadataTable.innerHTML = buildTable(metadata, file);
+          // Tampilkan metadata
+          let tableHTML = '<table class="table table-bordered table-striped">';
+          tableHTML += '<thead class="table-dark"><tr><th>Properti</th><th>Nilai</th></tr></thead><tbody>';
 
-        // Extract coordinates robustly
-        const { lat, lon } = extractCoords(metadata);
-        if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
-          console.log('Coordinates:', lat, lon);
-          locationInfo.textContent = '📍 Mencari alamat dari koordinat...';
-          const address = await reverseGeocode(lat, lon);
-          if (address) {
-            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lat + ',' + lon)}`;
-            locationInfo.innerHTML = `📍 Lokasi foto: ${address} <br/><a href="${mapsUrl}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary mt-2">Buka di Google Maps</a>`;
-          } else {
-            locationInfo.textContent = `📍 Koordinat: ${lat.toFixed(6)}, ${lon.toFixed(6)} (alamat tidak ditemukan)`;
+          for (const key in data) {
+            if (data.hasOwnProperty(key)) {
+              let value = data[key];
+              if (typeof value === 'object' && value !== null) value = JSON.stringify(value);
+              tableHTML += `<tr><td>${key}</td><td>${value}</td></tr>`;
+            }
           }
-        } else {
-          locationInfo.textContent = '⚠️ Metadata tidak mengandung informasi GPS.';
+
+          tableHTML += '</tbody></table>';
+          metadataTable.innerHTML = tableHTML;
+
+          // GPS data
+          if (data.GPSLatitude && data.GPSLongitude) {
+            locationInfo.innerHTML = `
+              📍 Lokasi foto: <a href="https://maps.google.com/?q=${data.GPSLatitude},${data.GPSLongitude}" target="_blank">
+                ${data.GPSLatitude}, ${data.GPSLongitude}
+              </a>
+            `;
+          } else {
+            locationInfo.textContent = '⚠️ Metadata tidak mengandung informasi GPS.';
+          }
+
+        } catch (err) {
+          metadataTable.innerHTML = `<div class="alert alert-danger">Error: ${err.message}</div>`;
         }
-      } catch (err) {
-        console.error('Error reading EXIF:', err);
-        const msg = err && err.message ? err.message : String(err);
-        metadataTable.innerHTML = `<div class="alert alert-danger">Gagal membaca metadata: ${msg}</div>`;
-        locationInfo.textContent = '';
-      }
+      };
+      reader.readAsDataURL(file);
     });
   </script>
 </body>
