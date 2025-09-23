@@ -104,26 +104,98 @@
     const metadataTable = document.getElementById('metadataTable');
     const locationInfo = document.getElementById('locationInfo');
 
+    // API key opencage diencode base64 (sama seperti sebelumnya)
     const encodedKey = "ZDVkYzAzOGY1NzUzNDY0MjgxZmYwMTZiZjIyODdlYWM=";
     const openCageApiKey = atob(encodedKey);
 
-    function isLikelyJPEG(file) {
-      if (!file || !file.type) return false;
-      const t = file.type.toLowerCase();
-      return t.includes('jpeg') || t.includes('jpg');
+    // Helper: konversi bagian rational/array -> angka
+    function rationalToNumber(part) {
+      if (part === null || part === undefined) return NaN;
+      if (typeof part === 'number') return part;
+      if (Array.isArray(part) && part.length >= 2 && typeof part[0] === 'number' && typeof part[1] === 'number') {
+        return part[0] / part[1];
+      }
+      if (Array.isArray(part) && part.length === 1) return Number(part[0]);
+      if (typeof part === 'object' && part !== null) {
+        // ex: {numerator: x, denominator: y}
+        if ('numerator' in part && 'denominator' in part) {
+          return part.numerator / part.denominator;
+        }
+      }
+      const parsed = parseFloat(part);
+      return Number.isFinite(parsed) ? parsed : NaN;
+    }
+
+    function dmsArrayToDecimal(arr) {
+      // arr could be [deg, min, sec] with rationals or numbers
+      if (!Array.isArray(arr)) return NaN;
+      if (arr.length >= 3) {
+        const deg = rationalToNumber(arr[0]);
+        const min = rationalToNumber(arr[1]);
+        const sec = rationalToNumber(arr[2]);
+        if (!Number.isFinite(deg)) return NaN;
+        return deg + (Number.isFinite(min) ? min / 60 : 0) + (Number.isFinite(sec) ? sec / 3600 : 0);
+      }
+      // fallback: if single numeric element
+      const first = rationalToNumber(arr[0]);
+      return Number.isFinite(first) ? first : NaN;
+    }
+
+    function extractCoords(metadata) {
+      // 1) exifr often returns latitude/longitude numbers
+      if (typeof metadata.latitude === 'number' && typeof metadata.longitude === 'number') {
+        return { lat: metadata.latitude, lon: metadata.longitude };
+      }
+      // 2) check GPSLatitude / GPSLongitude arrays (DMS)
+      if (metadata.GPSLatitude && metadata.GPSLongitude) {
+        const lat = Array.isArray(metadata.GPSLatitude) ? dmsArrayToDecimal(metadata.GPSLatitude) : rationalToNumber(metadata.GPSLatitude);
+        const lon = Array.isArray(metadata.GPSLongitude) ? dmsArrayToDecimal(metadata.GPSLongitude) : rationalToNumber(metadata.GPSLongitude);
+        let latFinal = Number.isFinite(lat) ? lat : null;
+        let lonFinal = Number.isFinite(lon) ? lon : null;
+        // apply refs if any (S/W)
+        const latRef = metadata.GPSLatitudeRef || metadata.GPSLatRef || null;
+        const lonRef = metadata.GPSLongitudeRef || metadata.GPSLngRef || null;
+        if (latFinal !== null && latRef && String(latRef).toUpperCase() === 'S') latFinal = -Math.abs(latFinal);
+        if (lonFinal !== null && lonRef && String(lonRef).toUpperCase() === 'W') lonFinal = -Math.abs(lonFinal);
+        return { lat: latFinal, lon: lonFinal };
+      }
+      // 3) sometimes metadata.gps exists
+      if (metadata.gps && typeof metadata.gps === 'object') {
+        if (typeof metadata.gps.latitude === 'number' && typeof metadata.gps.longitude === 'number') {
+          return { lat: metadata.gps.latitude, lon: metadata.gps.longitude };
+        }
+      }
+      return { lat: null, lon: null };
+    }
+
+    function formatGPSTime(metadata) {
+      // Format GPSDateStamp (YYYY:MM:DD) + GPSTimeStamp ([h,m,s] maybe rationals)
+      const datePart = metadata.GPSDateStamp || metadata.GPSDate || '';
+      let timePart = '';
+      if (Array.isArray(metadata.GPSTimeStamp)) {
+        const parts = metadata.GPSTimeStamp.map(p => {
+          const n = rationalToNumber(p);
+          return Number.isFinite(n) ? String(Math.floor(n)).padStart(2, '0') : '00';
+        });
+        timePart = parts.join(':');
+      } else if (metadata.GPSTimeStamp && typeof metadata.GPSTimeStamp === 'string') {
+        timePart = metadata.GPSTimeStamp;
+      }
+      const combined = (datePart ? datePart : '') + (timePart ? ' ' + timePart : '');
+      return combined.trim();
     }
 
     function formatValue(v) {
       if (v === null || typeof v === 'undefined') return '';
       if (v instanceof Date) return v.toLocaleString('id-ID');
-      if (typeof v === 'number' || typeof v === 'boolean' || typeof v === 'string') return String(v);
+      if (Array.isArray(v)) return JSON.stringify(v);
       if (typeof v === 'object') {
         try {
-          const json = JSON.stringify(v, function(key, val) {
-            if (Array.isArray(val) && val.length > 20) return val.slice(0, 20).concat([`...(${val.length} items)`]);
+          return JSON.stringify(v, (k, val) => {
+            // shorten long arrays
+            if (Array.isArray(val) && val.length > 30) return val.slice(0, 30).concat([`...(${val.length} items)`]);
             return val;
           }, 2);
-          return json;
         } catch (e) {
           return String(v);
         }
@@ -131,21 +203,29 @@
       return String(v);
     }
 
-    function buildTableFromMetadata(metadata, fileSizeKB) {
+    function buildTable(metadata, file) {
       let html = '<table class="table table-bordered table-striped">';
       html += '<thead class="table-dark"><tr><th>Properti</th><th>Nilai</th></tr></thead><tbody>';
-      html += `<tr><td>Ukuran File</td><td>${fileSizeKB} KB</td></tr>`;
+      html += `<tr><td>Ukuran File</td><td>${(file.size/1024).toFixed(2)} KB</td></tr>`;
 
-      if (metadata && metadata.DateTimeOriginal) {
-        html += `<tr><td>Tanggal Pengambilan</td><td>${formatValue(metadata.DateTimeOriginal)}</td></tr>`;
-      } else if (metadata && metadata.CreateDate) {
+      if (metadata.DateTimeOriginal) {
+        const dt = metadata.DateTimeOriginal instanceof Date ? metadata.DateTimeOriginal.toLocaleString('id-ID') : metadata.DateTimeOriginal;
+        html += `<tr><td>Tanggal Pengambilan</td><td>${dt}</td></tr>`;
+      } else if (metadata.CreateDate) {
         html += `<tr><td>Tanggal (CreateDate)</td><td>${formatValue(metadata.CreateDate)}</td></tr>`;
       }
 
-      const skipKeys = new Set(['latitude','longitude','gps','DateTimeOriginal','CreateDate']);
-      for (const [key, value] of Object.entries(metadata || {})) {
-        if (skipKeys.has(key)) continue;
-        html += `<tr><td>${key}</td><td><pre style="margin:0; white-space:pre-wrap;">${formatValue(value)}</pre></td></tr>`;
+      // GPS Date/Time stamp
+      const gpsDT = formatGPSTime(metadata);
+      if (gpsDT) {
+        html += `<tr><td>GPS Date/Time</td><td>${gpsDT}</td></tr>`;
+      }
+
+      // list other props (skip raw gps arrays to keep table readable)
+      const skip = new Set(['GPSLatitude','GPSLongitude','GPSLatitudeRef','GPSLongitudeRef','GPSTimeStamp','GPSDateStamp','gps','latitude','longitude']);
+      for (const [k, v] of Object.entries(metadata)) {
+        if (skip.has(k)) continue;
+        html += `<tr><td>${k}</td><td><pre style="margin:0; white-space:pre-wrap;">${formatValue(v)}</pre></td></tr>`;
       }
 
       html += '</tbody></table>';
@@ -156,8 +236,8 @@
       try {
         const q = encodeURIComponent(`${lat} ${lon}`);
         const url = `https://api.opencagedata.com/geocode/v1/json?q=${q}&key=${encodeURIComponent(openCageApiKey)}&no_annotations=1&language=id`;
-        const res = await fetch(url, { method: 'GET' });
-        if (!res.ok) throw new Error('Gagal memanggil OpenCage (' + res.status + ')');
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('OpenCage error: ' + res.status);
         const j = await res.json();
         if (j && j.results && j.results.length > 0) return j.results[0].formatted;
         return null;
@@ -167,13 +247,19 @@
       }
     }
 
+    function isLikelyJPEG(file) {
+      if (!file || !file.type) return false;
+      const t = file.type.toLowerCase();
+      return t.includes('jpeg') || t.includes('jpg');
+    }
+
     input.addEventListener('change', async () => {
       const file = input.files[0];
       metadataTable.innerHTML = '';
       locationInfo.textContent = '';
 
       if (!file) return;
-      console.log("File selected:", file);
+      console.log('File selected:', file);
 
       if (!isLikelyJPEG(file)) {
         metadataTable.innerHTML = `<div class="alert alert-info">Perhatian: file ini bukan JPEG. Banyak format (PNG, WebP, HEIC) sering tidak menyimpan EXIF. Tetap mencoba parse...</div>`;
@@ -182,8 +268,9 @@
       }
 
       try {
+        // exifr.parse(file, {gps:true}) returns friendly fields (latitude/longitude) when possible
         const metadata = await exifr.parse(file, { gps: true, tiff: true, exif: true });
-        console.log("Metadata extracted:", metadata);
+        console.log('Metadata extracted:', metadata);
 
         if (!metadata || Object.keys(metadata).length === 0) {
           metadataTable.innerHTML = `<div class="alert alert-warning">Tidak ditemukan metadata EXIF pada file ini.</div>`;
@@ -191,35 +278,28 @@
           return;
         }
 
-        const fileSizeKB = (file.size / 1024).toFixed(2);
-        metadataTable.innerHTML = buildTableFromMetadata(metadata, fileSizeKB);
+        metadataTable.innerHTML = buildTable(metadata, file);
 
-        let lat = null, lon = null;
-        if (typeof metadata.latitude === 'number' && typeof metadata.longitude === 'number') {
-          lat = metadata.latitude;
-          lon = metadata.longitude;
-        } else if (metadata.gps && typeof metadata.gps === 'object') {
-          if (typeof metadata.gps.latitude === 'number' && typeof metadata.gps.longitude === 'number') {
-            lat = metadata.gps.latitude;
-            lon = metadata.gps.longitude;
-          }
-        }
+        // EXTRACT coords robustly
+        const coords = extractCoords(metadata);
+        const lat = coords.lat, lon = coords.lon;
 
-        if (lat !== null && lon !== null && !Number.isNaN(lat) && !Number.isNaN(lon)) {
+        if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
           console.log('Coordinates:', lat, lon);
           locationInfo.textContent = '📍 Mencari alamat dari koordinat...';
           const address = await reverseGeocode(lat, lon);
           if (address) {
-            locationInfo.textContent = `📍 Lokasi foto: ${address}`;
+            // include clickable maps link
+            const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lat + ',' + lon)}`;
+            locationInfo.innerHTML = `📍 Lokasi foto: ${address} <br/><a href="${mapsUrl}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary mt-2">Buka di Google Maps</a>`;
           } else {
             locationInfo.textContent = `📍 Koordinat: ${lat.toFixed(6)}, ${lon.toFixed(6)} (alamat tidak ditemukan)`;
           }
         } else {
           locationInfo.textContent = '⚠️ Metadata tidak mengandung informasi GPS.';
         }
-
       } catch (err) {
-        console.error("Error reading EXIF:", err);
+        console.error('Error reading EXIF:', err);
         const msg = err && err.message ? err.message : String(err);
         metadataTable.innerHTML = `<div class="alert alert-danger">Gagal membaca metadata: ${msg}</div>`;
         locationInfo.textContent = '';
