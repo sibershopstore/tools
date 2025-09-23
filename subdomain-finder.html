@@ -84,7 +84,88 @@
   </footer>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- SCRIPT: hanya bagian ini yang diubah -->
   <script>
+    // Hanya ubah API / fetch logic di sini.
+    const CORS_PROXIES = [
+      'https://api.allorigins.win/raw?url=',
+      'https://api.codetabs.com/v1/proxy?quest=',
+      'https://corsproxy.io/?',
+      'https://api.allorigins.cf/raw?url='
+    ];
+
+    function buildProxyUrl(proxyPrefix, targetUrl) {
+      if (proxyPrefix.includes('raw?url=') || proxyPrefix.includes('quest=')) {
+        return proxyPrefix + encodeURIComponent(targetUrl);
+      }
+      if (proxyPrefix.endsWith('?') || proxyPrefix.endsWith('/')) {
+        return proxyPrefix + encodeURIComponent(targetUrl);
+      }
+      return proxyPrefix + encodeURIComponent(targetUrl);
+    }
+
+    async function fetchWithProxies(targetUrl, options = {}) {
+      let lastErr = null;
+      for (const proxy of CORS_PROXIES) {
+        const url = buildProxyUrl(proxy, targetUrl);
+        try {
+          const res = await fetch(url, options);
+          if (!res.ok) {
+            lastErr = new Error(`Proxy ${proxy} returned status ${res.status}`);
+            continue;
+          }
+          const ct = res.headers.get('content-type') || '';
+          if (ct.includes('application/json')) {
+            const json = await res.json();
+            return { type: 'json', data: json, proxy };
+          } else {
+            const text = await res.text();
+            const trimmed = text.trim();
+            if ((trimmed.startsWith('[') && trimmed.endsWith(']')) || (trimmed.startsWith('{') && trimmed.endsWith('}'))) {
+              try {
+                const parsed = JSON.parse(trimmed);
+                return { type: 'json', data: parsed, proxy };
+              } catch (e) {
+                return { type: 'text', data: text, proxy };
+              }
+            } else {
+              return { type: 'text', data: text, proxy };
+            }
+          }
+        } catch (err) {
+          lastErr = err;
+        }
+      }
+      throw lastErr || new Error('Semua proxy gagal.');
+    }
+
+    // Simple DNS-over-HTTPS A query using Google DNS (no CORS proxy needed)
+    async function dnsResolveA(name) {
+      try {
+        const url = `https://dns.google/resolve?name=${encodeURIComponent(name)}&type=A`;
+        const res = await fetch(url);
+        if (!res.ok) return null;
+        const json = await res.json();
+        if (json && json.Answer && json.Answer.length > 0) return json.Answer;
+        return null;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    // small wordlist for client-side active checks (kept short)
+    const SMALL_WORDLIST = ['www','mail','webmail','api','dev','staging','test','admin','portal','shop','secure','mx','blog'];
+
+    function showOutput(items) {
+      const output = document.getElementById('output');
+      if (!items || items.length === 0) {
+        output.innerHTML = '<p>Tidak ditemukan subdomain.</p>';
+        return;
+      }
+      output.innerHTML = '<pre>' + items.join('\n') + '</pre>';
+    }
+
+    // Main routine
     document.getElementById('subdomainForm').addEventListener('submit', async function(e) {
       e.preventDefault();
       const raw = document.getElementById('domainInput').value.trim();
@@ -96,35 +177,95 @@
       }
       output.innerHTML = '<p>Loading...</p>';
 
-      const sonarUrl = `https://sonar.omnisint.io/subdomains/${domain}`;
-      const allOriginsUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(sonarUrl)}`;
+      const resultsSet = new Set();
+
+      // 1) Sonar Omnisint
       try {
-        const response = await fetch(allOriginsUrl);
-        if (!response.ok) throw new Error('Gagal mengambil data subdomain.');
-        const data = await response.json();
-        if (!Array.isArray(data) || data.length === 0) {
-          output.innerHTML = '<p>Tidak ditemukan subdomain.</p>';
-        } else {
-          output.innerHTML = '<pre>' + data.join('\n') + '</pre>';
+        const sonarUrl = `https://sonar.omnisint.io/subdomains/${domain}`;
+        const r = await fetchWithProxies(sonarUrl, { method: 'GET' });
+        if (r.type === 'json' && Array.isArray(r.data)) {
+          r.data.forEach(s => {
+            if (s && s.endsWith(domain)) resultsSet.add(s);
+          });
+        } else if (r.type === 'text') {
+          const lines = r.data.trim().split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+          lines.forEach(l => { if (l.endsWith(domain)) resultsSet.add(l); });
         }
-      } catch (err) {
-        // Backup via Hackertarget
+      } catch (e) {
+        // ignore and continue
+      }
+
+      // 2) Hackertarget hostsearch
+      try {
+        const backupUrl = `https://api.hackertarget.com/hostsearch/?q=${domain}`;
+        const r2 = await fetchWithProxies(backupUrl, { method: 'GET' });
+        if (r2.type === 'text') {
+          const lines = r2.data.trim().split('\n').map(l => l.split(',')[0].trim()).filter(Boolean);
+          lines.forEach(l => { if (l.endsWith(domain)) resultsSet.add(l); });
+        } else if (r2.type === 'json' && Array.isArray(r2.data)) {
+          r2.data.forEach(s => { if (s && s.endsWith(domain)) resultsSet.add(s); });
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      // 3) crt.sh (Certificate Transparency)
+      try {
+        const crtUrl = `https://crt.sh/?q=%25.${domain}&output=json`;
+        const r3 = await fetchWithProxies(crtUrl, { method: 'GET' });
+        if (r3.type === 'json' && Array.isArray(r3.data)) {
+          r3.data.forEach(item => {
+            if (item) {
+              if (item.name_value) {
+                item.name_value.split('\n').forEach(n => {
+                  n = n.trim();
+                  if (n && n.endsWith(domain)) resultsSet.add(n);
+                });
+              }
+              if (item.common_name) {
+                const cn = item.common_name.trim();
+                if (cn && cn.endsWith(domain)) resultsSet.add(cn);
+              }
+            }
+          });
+        } else if (r3.type === 'text') {
+          const txt = r3.data || '';
+          const found = (txt.match(new RegExp(`[\\w.-]+\\.${domain.replace('.', '\\.')}`, 'gi')) || []);
+          found.forEach(f => resultsSet.add(f));
+        }
+      } catch (e) {
+        // ignore
+      }
+
+      // If we have passive results, show them
+      let results = Array.from(resultsSet).sort();
+      if (results.length > 0) {
+        showOutput(results);
+        return;
+      }
+
+      // 4) Active quick check via DNS-over-HTTPS for small common wordlist
+      output.innerHTML = '<p>Memeriksa subdomain umum (cek langsung DNS)...</p>';
+      for (const w of SMALL_WORDLIST) {
+        const name = `${w}.${domain}`;
         try {
-          const backupUrl = `https://api.hackertarget.com/hostsearch/?q=${domain}`;
-          const backupAllOrigins = `https://api.allorigins.win/raw?url=${encodeURIComponent(backupUrl)}`;
-          const res2 = await fetch(backupAllOrigins);
-          if (!res2.ok) throw new Error('Gagal backup.');
-          const text = await res2.text();
-          const lines = text.trim().split('\n').map(l => l.split(',')[0]);
-          if (lines.length === 0 || lines[0] === '') {
-            output.innerHTML = '<p>Tidak ditemukan subdomain di backup.</p>';
-          } else {
-            output.innerHTML = '<pre>' + lines.join('\n') + '</pre>';
+          const ans = await dnsResolveA(name);
+          if (ans && ans.length > 0) {
+            resultsSet.add(name);
           }
-        } catch (err2) {
-          output.innerHTML = `<p class="error">Error: ${err2.message}</p>`;
+        } catch (e) {
+          // ignore
         }
       }
+
+      results = Array.from(resultsSet).sort();
+      if (results.length > 0) {
+        showOutput(results);
+        return;
+      }
+
+      // Nothing found
+      output.innerHTML = '<p>Tidak ditemukan subdomain — sumber pasif kosong dan pengecekan cepat (wordlist kecil) tidak menemukan host live.</p><p>Rekomendasi: jalankan tool enumerasi (amass/subfinder) di server-side untuk cakupan lebih lengkap.</p>';
     });
   </script>
 </body>
