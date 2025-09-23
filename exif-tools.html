@@ -104,30 +104,44 @@
     const metadataTable = document.getElementById('metadataTable');
     const locationInfo = document.getElementById('locationInfo');
 
-    // API key opencage diencode base64 (sama seperti sebelumnya)
+    // OpenCage API key (base64 encoded as before)
     const encodedKey = "ZDVkYzAzOGY1NzUzNDY0MjgxZmYwMTZiZjIyODdlYWM=";
     const openCageApiKey = atob(encodedKey);
 
-    // Helper: konversi bagian rational/array -> angka
+    // Robust conversion for many EXIF "rational" shapes
     function rationalToNumber(part) {
-      if (part === null || part === undefined) return NaN;
-      if (typeof part === 'number') return part;
-      if (Array.isArray(part) && part.length >= 2 && typeof part[0] === 'number' && typeof part[1] === 'number') {
-        return part[0] / part[1];
+      if (part === null || typeof part === 'undefined') return NaN;
+      if (typeof part === 'number' && Number.isFinite(part)) return part;
+      if (typeof part === 'string') {
+        const p = parseFloat(part);
+        return Number.isFinite(p) ? p : NaN;
       }
-      if (Array.isArray(part) && part.length === 1) return Number(part[0]);
-      if (typeof part === 'object' && part !== null) {
-        // ex: {numerator: x, denominator: y}
-        if ('numerator' in part && 'denominator' in part) {
+      // if object with numerator/denominator
+      if (typeof part === 'object') {
+        // exifr sometimes gives {numerator,denominator}
+        if ('numerator' in part && 'denominator' in part && part.denominator != 0) {
           return part.numerator / part.denominator;
         }
+        // sometimes exifr returns arrays inside arrays
+        if (Array.isArray(part) && part.length > 0) {
+          return rationalToNumber(part[0]);
+        }
       }
-      const parsed = parseFloat(part);
-      return Number.isFinite(parsed) ? parsed : NaN;
+      // array of two numbers [num, den]
+      if (Array.isArray(part) && part.length >= 2 && typeof part[0] === 'number' && typeof part[1] === 'number' && part[1] !== 0) {
+        return part[0] / part[1];
+      }
+      // fallback parse
+      try {
+        const parsed = parseFloat(String(part));
+        return Number.isFinite(parsed) ? parsed : NaN;
+      } catch (e) {
+        return NaN;
+      }
     }
 
+    // Convert DMS array (deg,min,sec) to decimal degrees
     function dmsArrayToDecimal(arr) {
-      // arr could be [deg, min, sec] with rationals or numbers
       if (!Array.isArray(arr)) return NaN;
       if (arr.length >= 3) {
         const deg = rationalToNumber(arr[0]);
@@ -136,53 +150,105 @@
         if (!Number.isFinite(deg)) return NaN;
         return deg + (Number.isFinite(min) ? min / 60 : 0) + (Number.isFinite(sec) ? sec / 3600 : 0);
       }
-      // fallback: if single numeric element
+      // fallback: try first element
       const first = rationalToNumber(arr[0]);
       return Number.isFinite(first) ? first : NaN;
     }
 
+    // Extract coordinates from as many possible places as available
     function extractCoords(metadata) {
-      // 1) exifr often returns latitude/longitude numbers
-      if (typeof metadata.latitude === 'number' && typeof metadata.longitude === 'number') {
+      // 1) exifr's friendly properties
+      if (typeof metadata.latitude === 'number' && typeof metadata.longitude === 'number' && Number.isFinite(metadata.latitude) && Number.isFinite(metadata.longitude)) {
         return { lat: metadata.latitude, lon: metadata.longitude };
       }
-      // 2) check GPSLatitude / GPSLongitude arrays (DMS)
+
+      // 2) GPSLatitude / GPSLongitude (DMS arrays or rationals)
       if (metadata.GPSLatitude && metadata.GPSLongitude) {
-        const lat = Array.isArray(metadata.GPSLatitude) ? dmsArrayToDecimal(metadata.GPSLatitude) : rationalToNumber(metadata.GPSLatitude);
-        const lon = Array.isArray(metadata.GPSLongitude) ? dmsArrayToDecimal(metadata.GPSLongitude) : rationalToNumber(metadata.GPSLongitude);
+        const lat = dmsArrayToDecimal(metadata.GPSLatitude);
+        const lon = dmsArrayToDecimal(metadata.GPSLongitude);
         let latFinal = Number.isFinite(lat) ? lat : null;
         let lonFinal = Number.isFinite(lon) ? lon : null;
-        // apply refs if any (S/W)
+        // apply refs if present
         const latRef = metadata.GPSLatitudeRef || metadata.GPSLatRef || null;
         const lonRef = metadata.GPSLongitudeRef || metadata.GPSLngRef || null;
         if (latFinal !== null && latRef && String(latRef).toUpperCase() === 'S') latFinal = -Math.abs(latFinal);
         if (lonFinal !== null && lonRef && String(lonRef).toUpperCase() === 'W') lonFinal = -Math.abs(lonFinal);
         return { lat: latFinal, lon: lonFinal };
       }
-      // 3) sometimes metadata.gps exists
+
+      // 3) metadata.gps object (some libraries)
       if (metadata.gps && typeof metadata.gps === 'object') {
         if (typeof metadata.gps.latitude === 'number' && typeof metadata.gps.longitude === 'number') {
           return { lat: metadata.gps.latitude, lon: metadata.gps.longitude };
         }
+        if (metadata.gps.GPSLatitude && metadata.gps.GPSLongitude) {
+          const lat = dmsArrayToDecimal(metadata.gps.GPSLatitude);
+          const lon = dmsArrayToDecimal(metadata.gps.GPSLongitude);
+          return { lat: Number.isFinite(lat) ? lat : null, lon: Number.isFinite(lon) ? lon : null };
+        }
       }
+
       return { lat: null, lon: null };
     }
 
-    function formatGPSTime(metadata) {
-      // Format GPSDateStamp (YYYY:MM:DD) + GPSTimeStamp ([h,m,s] maybe rationals)
-      const datePart = metadata.GPSDateStamp || metadata.GPSDate || '';
-      let timePart = '';
-      if (Array.isArray(metadata.GPSTimeStamp)) {
-        const parts = metadata.GPSTimeStamp.map(p => {
-          const n = rationalToNumber(p);
-          return Number.isFinite(n) ? String(Math.floor(n)).padStart(2, '0') : '00';
-        });
-        timePart = parts.join(':');
-      } else if (metadata.GPSTimeStamp && typeof metadata.GPSTimeStamp === 'string') {
-        timePart = metadata.GPSTimeStamp;
+    // Parse GPSTimeStamp robustly (handles rationals, numbers, strings)
+    function parseGPSTime(metadata) {
+      // Prefer GPSTimeStamp + GPSDateStamp
+      let datePart = metadata.GPSDateStamp || metadata.GPSDate || null;
+      let timePart = null;
+
+      const rawTime = metadata.GPSTimeStamp || metadata.GPSTime || metadata.gps && metadata.gps.GPSTimeStamp;
+      if (Array.isArray(rawTime) && rawTime.length > 0) {
+        const parts = rawTime.map(p => rationalToNumber(p));
+        // if any part is NaN, try to salvage by using DateTimeOriginal
+        if (parts.every(x => Number.isFinite(x))) {
+          const hh = String(Math.trunc(parts[0])).padStart(2, '0');
+          const mm = parts.length > 1 && Number.isFinite(parts[1]) ? String(Math.trunc(parts[1])).padStart(2, '0') : '00';
+          const ssNum = parts.length > 2 && Number.isFinite(parts[2]) ? parts[2] : 0;
+          const ss = String(Math.trunc(ssNum)).padStart(2, '0');
+          timePart = `${hh}:${mm}:${ss}`;
+        } else {
+          // partially valid: fill invalid with 00
+          const hh = Number.isFinite(parts[0]) ? String(Math.trunc(parts[0])).padStart(2,'0') : '00';
+          const mm = Number.isFinite(parts[1]) ? String(Math.trunc(parts[1])).padStart(2,'0') : '00';
+          const ss = Number.isFinite(parts[2]) ? String(Math.trunc(parts[2])).padStart(2,'0') : '00';
+          // if all three are zeros then treat as invalid
+          if (hh === '00' && mm === '00' && ss === '00') timePart = null;
+          else timePart = `${hh}:${mm}:${ss}`;
+        }
+      } else if (typeof rawTime === 'string') {
+        // try to extract hh:mm:ss from string
+        const m = rawTime.match(/(\d{1,2}):(\d{1,2}):?(\d{0,2})?/);
+        if (m) {
+          const hh = m[1].padStart(2,'0');
+          const mm = m[2].padStart(2,'0');
+          const ss = (m[3] || '00').padStart(2,'0');
+          timePart = `${hh}:${mm}:${ss}`;
+        }
       }
-      const combined = (datePart ? datePart : '') + (timePart ? ' ' + timePart : '');
-      return combined.trim();
+
+      // If no datePart, try to use DateTimeOriginal's date portion
+      if (!datePart && metadata.DateTimeOriginal) {
+        // DateTimeOriginal sometimes like '2025:09:23 12:34:56' or Date object
+        if (metadata.DateTimeOriginal instanceof Date) {
+          const d = metadata.DateTimeOriginal;
+          datePart = `${d.getFullYear()}:${String(d.getMonth()+1).padStart(2,'0')}:${String(d.getDate()).padStart(2,'0')}`;
+          if (!timePart) {
+            timePart = `${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}:${String(d.getSeconds()).padStart(2,'0')}`;
+          }
+        } else if (typeof metadata.DateTimeOriginal === 'string') {
+          const dt = metadata.DateTimeOriginal;
+          const dateMatch = dt.match(/(\d{4}[:\-]\d{1,2}[:\-]\d{1,2})/);
+          const timeMatch = dt.match(/(\d{1,2}:\d{1,2}:\d{1,2})/);
+          if (dateMatch) datePart = dateMatch[1].replace(/-/g, ':');
+          if (!timePart && timeMatch) timePart = timeMatch[1];
+        }
+      }
+
+      if (datePart || timePart) {
+        return ((datePart || '') + (timePart ? ' ' + timePart : '')).trim();
+      }
+      return null;
     }
 
     function formatValue(v) {
@@ -191,9 +257,8 @@
       if (Array.isArray(v)) return JSON.stringify(v);
       if (typeof v === 'object') {
         try {
-          return JSON.stringify(v, (k, val) => {
-            // shorten long arrays
-            if (Array.isArray(val) && val.length > 30) return val.slice(0, 30).concat([`...(${val.length} items)`]);
+          return JSON.stringify(v, (k,val) => {
+            if (Array.isArray(val) && val.length > 30) return val.slice(0,30).concat([`...(${val.length} items)`]);
             return val;
           }, 2);
         } catch (e) {
@@ -211,19 +276,16 @@
       if (metadata.DateTimeOriginal) {
         const dt = metadata.DateTimeOriginal instanceof Date ? metadata.DateTimeOriginal.toLocaleString('id-ID') : metadata.DateTimeOriginal;
         html += `<tr><td>Tanggal Pengambilan</td><td>${dt}</td></tr>`;
-      } else if (metadata.CreateDate) {
-        html += `<tr><td>Tanggal (CreateDate)</td><td>${formatValue(metadata.CreateDate)}</td></tr>`;
       }
 
-      // GPS Date/Time stamp
-      const gpsDT = formatGPSTime(metadata);
-      if (gpsDT) {
-        html += `<tr><td>GPS Date/Time</td><td>${gpsDT}</td></tr>`;
+      const gpsDateTime = parseGPSTime(metadata);
+      if (gpsDateTime) {
+        html += `<tr><td>GPS Date/Time</td><td>${gpsDateTime}</td></tr>`;
       }
 
-      // list other props (skip raw gps arrays to keep table readable)
+      // show other props but skip raw GPS arrays for brevity
       const skip = new Set(['GPSLatitude','GPSLongitude','GPSLatitudeRef','GPSLongitudeRef','GPSTimeStamp','GPSDateStamp','gps','latitude','longitude']);
-      for (const [k, v] of Object.entries(metadata)) {
+      for (const [k,v] of Object.entries(metadata)) {
         if (skip.has(k)) continue;
         html += `<tr><td>${k}</td><td><pre style="margin:0; white-space:pre-wrap;">${formatValue(v)}</pre></td></tr>`;
       }
@@ -237,7 +299,7 @@
         const q = encodeURIComponent(`${lat} ${lon}`);
         const url = `https://api.opencagedata.com/geocode/v1/json?q=${q}&key=${encodeURIComponent(openCageApiKey)}&no_annotations=1&language=id`;
         const res = await fetch(url);
-        if (!res.ok) throw new Error('OpenCage error: ' + res.status);
+        if (!res.ok) return null;
         const j = await res.json();
         if (j && j.results && j.results.length > 0) return j.results[0].formatted;
         return null;
@@ -268,8 +330,8 @@
       }
 
       try {
-        // exifr.parse(file, {gps:true}) returns friendly fields (latitude/longitude) when possible
-        const metadata = await exifr.parse(file, { gps: true, tiff: true, exif: true });
+        // Parse with exifr (gps:true gives friendly fields when possible)
+        const metadata = await exifr.parse(file, { gps: true, exif: true, tiff: true });
         console.log('Metadata extracted:', metadata);
 
         if (!metadata || Object.keys(metadata).length === 0) {
@@ -280,16 +342,13 @@
 
         metadataTable.innerHTML = buildTable(metadata, file);
 
-        // EXTRACT coords robustly
-        const coords = extractCoords(metadata);
-        const lat = coords.lat, lon = coords.lon;
-
+        // Extract coordinates robustly
+        const { lat, lon } = extractCoords(metadata);
         if (lat !== null && lon !== null && !isNaN(lat) && !isNaN(lon)) {
           console.log('Coordinates:', lat, lon);
           locationInfo.textContent = '📍 Mencari alamat dari koordinat...';
           const address = await reverseGeocode(lat, lon);
           if (address) {
-            // include clickable maps link
             const mapsUrl = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(lat + ',' + lon)}`;
             locationInfo.innerHTML = `📍 Lokasi foto: ${address} <br/><a href="${mapsUrl}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary mt-2">Buka di Google Maps</a>`;
           } else {
